@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>basspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Mono:wght@400;700&family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+        .logo { font-family: 'Outfit', sans-serif; }
+        .top-nav { background: #171717; border-bottom: 1px solid #262626; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.5rem; font-weight: 900; cursor: pointer; }
+        .profile-menu { position: relative; }
+        .profile-btn { background: #262626; border: 1px solid #404040; border-radius: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.25rem; transition: all 0.2s; }
+        .profile-btn:hover { background: #404040; }
+        .dropdown { position: absolute; top: 50px; right: 0; background: #171717; border: 1px solid #404040; border-radius: 0; min-width: 220px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .dropdown.show { display: block; }
+        .dropdown-item { padding: 0.75rem 1rem; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #262626; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #262626; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .welcome-section { text-align: center; padding: 3rem 0; }
+        .welcome-section h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem; font-family: 'Outfit', sans-serif; }
+        .welcome-section p { color: #737373; font-size: 1.25rem; margin-bottom: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0; }
+        .stat-card { background: #171717; border: 1px solid #262626; border-radius: 0; padding: 1.5rem; text-align: center; }
+        .stat-number { font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem; font-family: 'Space Mono', monospace; }
+        .stat-label { color: #737373; font-size: 0.875rem; }
+        .profile-header { background: #171717; border: 1px solid #262626; border-radius: 0; padding: 2rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 2rem; }
+        .profile-avatar { width: 100px; height: 100px; background: #262626; border-radius: 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+        .settings-section { background: #171717; border: 1px solid #262626; border-radius: 0; padding: 2rem; margin-bottom: 1rem; }
+        .settings-section h3 { font-size: 1.25rem; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #262626; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-label h4 { margin-bottom: 0.25rem; font-family: 'Outfit', sans-serif; }
+        .setting-label p { color: #737373; font-size: 0.875rem; }
+        .toggle { width: 50px; height: 26px; background: #262626; border-radius: 13px; position: relative; cursor: pointer; transition: background 0.2s; }
+        .toggle.active { background: #fff; }
+        .toggle-slider { width: 22px; height: 22px; background: #737373; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: all 0.2s; }
+        .toggle.active .toggle-slider { left: 26px; background: #000; }
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; color: #a3a3a3; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 1rem; font-family: 'Inter', sans-serif; }
+        .btn-primary { background: #fff; color: #000; }
+        .btn-primary:hover { background: #e5e5e5; }
+        .btn-secondary { background: #262626; color: #d4d4d4; }
+        .btn-secondary:hover { background: #404040; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #171717; border: 1px solid #404040; border-radius: 0; padding: 2rem; width: 90%; max-width: 400px; }
+        .modal h3 { font-size: 1.5rem; margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; }
+        .input { width: 100%; padding: 0.75rem 1.25rem; background: #262626; border: 1px solid #404040; border-radius: 0; color: #fff; font-size: 1rem; margin-bottom: 1.5rem; font-family: 'Inter', sans-serif; }
+        .input:focus { outline: none; border-color: #737373; }
+        .input::placeholder { color: #737373; }
+        .modal-buttons { display: flex; gap: 0.75rem; }
+        .modal-buttons .btn { flex: 1; }
+        .upload-area { border: 2px dashed #404040; border-radius: 0; padding: 4rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #171717; margin-bottom: 2rem; }
+        .upload-area:hover { border-color: #737373; background: #262626; }
+        .upload-area.drag-active { border-color: #a3a3a3; background: #262626; }
+        .upload-icon { font-size: 5rem; margin-bottom: 1.5rem; }
+        .upload-area h2 { font-size: 1.5rem; margin-bottom: 0.75rem; font-family: 'Outfit', sans-serif; }
+        .upload-area p { color: #737373; font-size: 1.125rem; }
+        .tracks-section h2 { font-size: 1.5rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif; }
+        .track-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .track { background: #171717; border: 1px solid #262626; border-radius: 0; padding: 1.25rem; transition: all 0.2s; }
+        .track:hover { background: #262626; }
+        .track-content { display: flex; align-items: center; gap: 1rem; }
+        .track-number { width: 2rem; text-align: center; color: #737373; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+        .play-btn { width: 3.5rem; height: 3.5rem; background: #fff; color: #000; border: none; border-radius: 0; font-size: 1.25rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .play-btn:hover { background: #e5e5e5; transform: scale(1.05); }
+        .track-info { flex: 1; min-width: 0; cursor: pointer; }
+        .track-title { font-size: 1.125rem; font-weight: bold; margin-bottom: 0.25rem; font-family: 'Inter', sans-serif; }
+        .track-artist { font-size: 0.875rem; color: #a3a3a3; }
+        .track-duration { font-size: 0.75rem; color: #737373; margin-top: 0.25rem; font-family: 'JetBrains Mono', monospace; }
+        .track-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .btn-small { padding: 0.5rem 0.75rem; background: #262626; border: 1px solid #404040; border-radius: 0; color: #a3a3a3; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
+        .btn-small:hover { background: #404040; }
+        .empty-state { text-align: center; padding: 5rem 0; }
+        .empty-state-icon { font-size: 4rem; opacity: 0.3; margin-bottom: 1.5rem; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif; font-weight: 900; }
+        .page-header p { color: #737373; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="logo" onclick="showScreen('home')">🎵 basspace</div>
+        <div class="profile-menu">
+            <div class="profile-btn" id="profileBtn">👤</div>
+            <div id="dropdown" class="dropdown">
+                <div class="dropdown-item" onclick="showScreen('home')">🏠 Home</div>
+                <div class="dropdown-item" onclick="showScreen('profile')">👤 Profile</div>
+                <div class="dropdown-item" onclick="showScreen('upload')">📤 Upload Music</div>
+                <div class="dropdown-item" onclick="showScreen('library')">🎵 Browse Library</div>
+                <div class="dropdown-item" onclick="openCreatePlaylist()">📀 Create Playlist</div>
+                <div class="dropdown-item" onclick="showScreen('settings')">⚙️ Settings</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="homeScreen" class="screen active">
+            <div class="welcome-section">
+                <h1>Discover Music</h1>
+                <p>Search for artists and songs uploaded by users</p>
+                <div style="max-width:600px;margin:2rem auto;"><input type="text" id="searchInput" class="input" placeholder="Search for artists, songs, or albums..." style="margin:0;"></div>
+            </div>
+            <div class="tracks-section">
+                <h2>🔥 Popular Tracks</h2>
+                <div id="popularTracks" class="track-list"></div>
+                <div id="noResults" class="empty-state" style="display:none;"><div class="empty-state-icon">🔍</div><h2>No results found</h2><p>Try a different search term</p></div>
+                <div id="noMusic" class="empty-state"><div class="empty-state-icon">🎵</div><h2>No music available yet</h2><p>Be the first to upload tracks!</p></div>
+            </div>
+            <div class="stats">
+                <div class="stat-card"><div class="stat-number" id="totalTracks">0</div><div class="stat-label">Total Tracks</div></div>
+                <div class="stat-card"><div class="stat-number" id="totalArtists">0</div><div class="stat-label">Artists</div></div>
+                <div class="stat-card"><div class="stat-number" id="totalPlays">0</div><div class="stat-label">Total Plays</div></div>
+            </div>
+        </div>
+
+        <div id="profileScreen" class="screen">
+            <div style="height:180px;background:linear-gradient(135deg,#1a1a1a,#2d2d2d);"></div>
+            <div style="padding:0 2rem;">
+                <div style="display:flex;align-items:flex-end;gap:1.5rem;margin-top:-50px;margin-bottom:2rem;">
+                    <div class="profile-avatar" style="width:100px;height:100px;border:3px solid #0a0a0a;font-size:3rem;">👤</div>
+                    <div style="padding-bottom:0.5rem;flex:1;">
+                        <h1 style="font-size:2rem;font-weight:900;font-family:'Outfit',sans-serif;margin-bottom:0.25rem;" id="profileUsername">Music Lover</h1>
+                        <p style="color:#737373;font-size:0.875rem;">@musiclover</p>
+                    </div>
+                </div>
+                <p style="color:#a3a3a3;margin-bottom:2rem;max-width:600px;" id="profileBio">Music enthusiast and creator 🎵</p>
+                <div style="display:flex;gap:3rem;border-bottom:1px solid #262626;margin-bottom:2rem;">
+                    <button style="background:none;border:none;color:#fff;font-size:1rem;font-weight:600;padding:1rem 0;border-bottom:2px solid #fff;cursor:pointer;font-family:'Inter',sans-serif;" onclick="showProfileTab('tracks')">
+                        Tracks <span style="color:#737373;font-weight:400;" id="profileTrackCount">0</span>
+                    </button>
+                    <button style="background:none;border:none;color:#737373;font-size:1rem;font-weight:600;padding:1rem 0;cursor:pointer;font-family:'Inter',sans-serif;" onclick="showProfileTab('playlists')" id="playlistTabBtn">
+                        Playlists <span style="font-weight:400;" id="profilePlaylistCount">0</span>
+                    </button>
+                </div>
+                <div id="profileTracksSection">
+                    <div id="profileTrackList" class="track-list"></div>
+                    <div id="profileEmptyTracks" class="empty-state" style="padding:3rem 0;"><div class="empty-state-icon" style="font-size:3rem;">🎵</div><h2 style="font-size:1.25rem;">No tracks uploaded</h2><p>Share your music with the world</p></div>
+                </div>
+                <div id="profilePlaylistsSection" style="display:none;">
+                    <div id="profilePlaylistList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
+                    <div id="profileEmptyPlaylists" class="empty-state" style="padding:3rem 0;"><div class="empty-state-icon" style="font-size:3rem;">📀</div><h2 style="font-size:1.25rem;">No playlists created</h2><p>Organize your favorite tracks</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsScreen" class="screen">
+            <div class="page-header"><h1>Settings</h1><p>Manage your account and preferences</p></div>
+            <div class="settings-section"><h3>Account Information</h3><div class="input-group"><label>Display Name</label><input type="text" class="input" id="displayName" value="Music Lover"></div><div class="input-group"><label>Username</label><input type="text" class="input" id="usernameInput" value="musiclover"></div>                    <div class="input-group"><label>Email</label><input type="email" class="input" id="emailInput" value="user@basspace.com"></div>                    <div class="input-group"><label>Bio</label><textarea class="input" id="bioInput" rows="3" style="resize:vertical;">Music enthusiast and creator 🎵</textarea></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div>
+            <div class="settings-section"><h3>Playback</h3><div class="setting-item"><div class="setting-label"><h4>Autoplay</h4><p>Automatically play next track</p></div><div class="toggle" onclick="this.classList.toggle('active')"><div class="toggle-slider"></div></div></div></div>
+            <div class="settings-section"><h3>Appearance</h3><div class="setting-item"><div class="setting-label"><h4>Dark Mode</h4><p>Use dark theme (currently enabled)</p></div><div class="toggle active"><div class="toggle-slider"></div></div></div></div>
+        </div>
+
+        <div id="uploadScreen" class="screen">
+            <div class="page-header"><h1>Upload Music</h1><p>Add tracks to your library</p></div>
+            <div id="uploadArea" class="upload-area"><input id="fileInput" type="file" multiple accept="audio/*,.mp3,.m4a" style="display:none;"><div class="upload-icon">🎧</div><h2>Drop your audio files here</h2><p>or click to browse</p></div>
+            <div id="uploadedTracks" class="tracks-section" style="display:none;"><h2>Recently Uploaded</h2><div id="recentTrackList" class="track-list"></div></div>
+        </div>
+
+        <div id="libraryScreen" class="screen">
+            <div class="page-header"><h1>Music Library</h1><p>Browse and manage your personal collection</p></div>
+            <div class="tracks-section"><h2>🎵 My Tracks (<span id="trackCount">0</span>)</h2><div id="trackList" class="track-list"></div><div id="emptyState" class="empty-state"><div class="empty-state-icon">🎵</div><h2>Your library is empty</h2><p>Upload some tracks to get started</p></div></div>
+        </div>
+    </div>
+
+    <div id="createPlaylistModal" class="modal-overlay"><div class="modal"><h3>Create Playlist</h3><input id="playlistNameInput" type="text" class="input" placeholder="Playlist name..."><div class="modal-buttons"><button class="btn btn-primary" onclick="confirmCreatePlaylist()">Create</button><button class="btn btn-secondary" onclick="closeCreatePlaylist()">Cancel</button></div></div></div>
+
+    <audio id="audioPlayer" style="display:none;"></audio>
+
+    <script>
+let tracks=[],allUserTracks=[],totalPlays=0,currentPlayingId=null,playlists=[],currentProfileTab='tracks';
+const audioPlayer=document.getElementById('audioPlayer'),fileInput=document.getElementById('fileInput'),uploadArea=document.getElementById('uploadArea'),trackList=document.getElementById('trackList'),emptyState=document.getElementById('emptyState'),searchInput=document.getElementById('searchInput'),profileBtn=document.getElementById('profileBtn'),dropdown=document.getElementById('dropdown');
+
+profileBtn.onclick=e=>{e.stopPropagation();dropdown.classList.toggle('show')};
+document.onclick=e=>{if(!e.target.closest('.profile-menu'))dropdown.classList.remove('show')};
+
+function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(s+'Screen').classList.add('active');dropdown.classList.remove('show');if(s==='home')renderPopularTracks();if(s==='profile')renderProfile();updateStats()}
+
+function saveProfile(){const name=document.getElementById('displayName').value,username=document.getElementById('usernameInput').value,bio=document.getElementById('bioInput').value;document.getElementById('profileUsername').textContent=name;document.getElementById('profileBio').textContent=bio;alert('Profile updated successfully!')}
+
+function showProfileTab(tab){currentProfileTab=tab;const tracksBtn=document.querySelector('[onclick="showProfileTab(\'tracks\')"]'),playlistsBtn=document.getElementById('playlistTabBtn');tracksBtn.style.borderBottom=tab==='tracks'?'2px solid #fff':'none';tracksBtn.style.color=tab==='tracks'?'#fff':'#737373';playlistsBtn.style.borderBottom=tab==='playlists'?'2px solid #fff':'none';playlistsBtn.style.color=tab==='playlists'?'#fff':'#737373';document.getElementById('profileTracksSection').style.display=tab==='tracks'?'block':'none';document.getElementById('profilePlaylistsSection').style.display=tab==='playlists'?'block':'none';renderProfile()}
+
+function renderProfile(){document.getElementById('profileTrackCount').textContent=tracks.length;document.getElementById('profilePlaylistCount').textContent=playlists.length;if(currentProfileTab==='tracks'){const list=document.getElementById('profileTrackList'),empty=document.getElementById('profileEmptyTracks');if(tracks.length===0){list.innerHTML='';empty.style.display='block'}else{empty.style.display='none';list.innerHTML=tracks.map((t,i)=>`<div class="track"><div class="track-content"><div class="track-number">${t.isPlaying?'♫':i+1}</div><button class="play-btn" onclick="togglePlay('${t.id}')">${t.isPlaying?'⏸':'▶'}</button><div class="track-info"><div class="track-title">${t.title}</div><div class="track-artist">${t.artist} • ${t.album}</div><div class="track-duration">⏱ ${formatDuration(t.duration)}</div></div><div class="track-actions"><button class="btn-small" onclick="downloadTrack('${t.id}')">⬇ Download</button></div></div></div>`).join('')}}else{const list=document.getElementById('profilePlaylistList'),empty=document.getElementById('profileEmptyPlaylists');if(playlists.length===0){list.innerHTML='';empty.style.display='block'}else{empty.style.display='none';list.innerHTML=playlists.map(pl=>`<div style="background:#171717;border:1px solid #262626;padding:1.25rem;cursor:pointer;transition:all 0.2s;height:140px;display:flex;flex-direction:column;justify-content:center;" onmouseover="this.style.background='#262626'" onmouseout="this.style.background='#171717'"><div style="font-size:2.5rem;margin-bottom:0.75rem;">📀</div><h3 style="font-weight:700;font-size:1rem;margin-bottom:0.25rem;font-family:'Outfit',sans-serif;">${pl.name}</h3><p style="color:#737373;font-size:0.875rem;">${pl.trackIds.length} tracks</p></div>`).join('')}}}
+
+uploadArea.onclick=()=>fileInput.click();
+uploadArea.ondragover=e=>{e.preventDefault();uploadArea.classList.add('drag-active')};
+uploadArea.ondragleave=()=>uploadArea.classList.remove('drag-active');
+uploadArea.ondrop=e=>{e.preventDefault();uploadArea.classList.remove('drag-active');handleFiles(e.dataTransfer.files)};
+fileInput.onchange=e=>handleFiles(e.target.files);
+
+function handleFiles(files){Array.from(files).filter(f=>/audio\//.test(f.type)||/\.(mp3|m4a)$/i.test(f.name)).forEach(file=>{const url=URL.createObjectURL(file),track={id:Math.random().toString(36).slice(2),file,url,title:file.name.replace(/\.(mp3|m4a|mp4)$/i,''),artist:'Unknown Artist',album:'Unknown Album',duration:null,isPlaying:false};const audio=document.createElement('audio');audio.src=url;audio.onloadedmetadata=()=>{track.duration=audio.duration;updateStats();renderLibrary();renderPopularTracks();renderRecentUploads()};tracks.push(track);allUserTracks.push(track)});updateStats();renderLibrary();renderPopularTracks();renderRecentUploads()}
+
+function renderRecentUploads(){const container=document.getElementById('uploadedTracks'),list=document.getElementById('recentTrackList');if(allUserTracks.length>0){container.style.display='block';const recent=allUserTracks.slice(-10).reverse();list.innerHTML=recent.map((t,i)=>`<div class="track"><div class="track-content"><div class="track-number">${t.isPlaying?'♫':i+1}</div><button class="play-btn" onclick="togglePlay('${t.id}')">${t.isPlaying?'⏸':'▶'}</button><div class="track-info"><div class="track-title">${t.title}</div><div class="track-artist">${t.artist} • ${t.album}</div><div class="track-duration">⏱ ${formatDuration(t.duration)}</div></div><div class="track-actions"><button class="btn-small" onclick="downloadTrack('${t.id}')">⬇ Download</button></div></div></div>`).join('')}else{container.style.display='none'}}
+
+function openCreatePlaylist(){document.getElementById('createPlaylistModal').classList.add('show');dropdown.classList.remove('show')}
+function closeCreatePlaylist(){document.getElementById('createPlaylistModal').classList.remove('show');document.getElementById('playlistNameInput').value=''}
+function confirmCreatePlaylist(){const name=document.getElementById('playlistNameInput').value.trim();if(name){playlists.push({id:Math.random().toString(36).slice(2),name:name,trackIds:[]});closeCreatePlaylist();updateStats();renderProfile()}}
+
+if(searchInput)searchInput.oninput=()=>{const q=searchInput.value.toLowerCase().trim();renderPopularTracks(q?allUserTracks.filter(t=>t.title.toLowerCase().includes(q)||t.artist.toLowerCase().includes(q)||t.album.toLowerCase().includes(q)):null)};
+
+function renderPopularTracks(filtered){const container=document.getElementById('popularTracks'),noMusic=document.getElementById('noMusic'),noResults=document.getElementById('noResults'),list=filtered||allUserTracks;noResults.style.display='none';noMusic.style.display='none';if(list.length===0){container.innerHTML='';(filtered?noResults:noMusic).style.display='block';return}container.innerHTML=list.slice(0,20).map((t,i)=>`<div class="track"><div class="track-content"><div class="track-number">${t.isPlaying?'♫':i+1}</div><button class="play-btn" onclick="togglePlay('${t.id}')">${t.isPlaying?'⏸':'▶'}</button><div class="track-info"><div class="track-title">${t.title}</div><div class="track-artist">${t.artist} • ${t.album}</div><div class="track-duration">⏱ ${formatDuration(t.duration)}</div></div><div class="track-actions"><button class="btn-small" onclick="downloadTrack('${t.id}')">⬇ Download MP3</button></div></div></div>`).join('')}
+
+function togglePlay(id){const t=tracks.find(x=>x.id===id)||allUserTracks.find(x=>x.id===id);if(!t)return;if(currentPlayingId===id&&!audioPlayer.paused){audioPlayer.pause();t.isPlaying=false}else if(currentPlayingId===id&&audioPlayer.paused){audioPlayer.play();t.isPlaying=true}else{tracks.forEach(x=>x.isPlaying=false);allUserTracks.forEach(x=>x.isPlaying=false);audioPlayer.src=t.url;audioPlayer.load();audioPlayer.play().then(()=>{currentPlayingId=id;t.isPlaying=true;totalPlays++;updateStats();renderLibrary();renderPopularTracks()})}renderLibrary();renderPopularTracks()}
+
+function downloadTrack(id){const t=tracks.find(x=>x.id===id);if(!t)return;const a=document.createElement('a');a.href=t.url;a.download=t.file.name;a.click()}
+
+function deleteTrack(id){const t=tracks.find(x=>x.id===id);if(t&&t.url)URL.revokeObjectURL(t.url);tracks=tracks.filter(x=>x.id!==id);allUserTracks=allUserTracks.filter(x=>x.id!==id);if(currentPlayingId===id){audioPlayer.pause();currentPlayingId=null}updateStats();renderLibrary();renderPopularTracks()}
+
+function formatDuration(s){if(!s||isNaN(s))return'--:--';const m=Math.floor(s/60),sec=Math.floor(s%60);return`${m}:${sec.toString().padStart(2,'0')}`}
+
+function updateStats(){document.getElementById('totalTracks').textContent=allUserTracks.length;document.getElementById('trackCount').textContent=tracks.length;document.getElementById('totalArtists').textContent=new Set(allUserTracks.map(t=>t.artist)).size;document.getElementById('totalPlays').textContent=totalPlays}
+
+function renderLibrary(){if(tracks.length===0){trackList.innerHTML='';emptyState.style.display='block'}else{emptyState.style.display='none';trackList.innerHTML=tracks.map((t,i)=>`<div class="track"><div class="track-content"><div class="track-number">${t.isPlaying?'♫':i+1}</div><button class="play-btn" onclick="togglePlay('${t.id}')">${t.isPlaying?'⏸':'▶'}</button><div class="track-info"><div class="track-title">${t.title}</div><div class="track-artist">${t.artist} • ${t.album}</div><div class="track-duration">⏱ ${formatDuration(t.duration)}</div></div><div class="track-actions"><button class="btn-small" onclick="downloadTrack('${t.id}')">⬇ Download</button><button class="btn-small" onclick="deleteTrack('${t.id}')">🗑 Delete</button></div></div></div>`).join('')}}
+
+audioPlayer.onended=()=>{tracks.forEach(t=>t.isPlaying=false);allUserTracks.forEach(t=>t.isPlaying=false);currentPlayingId=null;renderLibrary();renderPopularTracks()};
+
+updateStats();renderLibrary();renderPopularTracks();
+    </script>
+</body>
+</html>
