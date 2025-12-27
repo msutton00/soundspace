@@ -3039,20 +3039,56 @@ async function saveProfile() {
   // Silent - no alert
 }
 
-function changeGlowColor(color) {
+async function changeGlowColor(color) {
   customGlowColor = color;
   generateCompleteTheme(profileBackground);
   document.getElementById('customGlowPicker').value = color;
-  saveData();
-  // Silent - no alert
+  
+  // Save to database
+  if (supabase && currentUser) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ glow_color: color })
+        .eq('id', currentUser.id);
+      
+      if (error) {
+        console.error('Error saving glow color:', error);
+      } else {
+        console.log('✨ Glow color saved to database:', color);
+      }
+    } catch (err) {
+      console.error('Exception saving glow color:', err);
+    }
+  }
+  
+  saveData(); // Also save to localStorage for backup
 }
 
-function resetGlowColor() {
+async function resetGlowColor() {
   customGlowColor = null;
   generateCompleteTheme(profileBackground);
   document.getElementById('customGlowPicker').value = '';
-  saveData();
-  // Silent - no alert
+  
+  // Save to database
+  if (supabase && currentUser) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ glow_color: null })
+        .eq('id', currentUser.id);
+      
+      if (error) {
+        console.error('Error resetting glow color:', error);
+      } else {
+        console.log('✨ Glow color reset in database');
+      }
+    } catch (err) {
+      console.error('Exception resetting glow color:', err);
+    }
+  }
+  
+  saveData(); // Also save to localStorage for backup
 }
 
 function resetCustomization() {
@@ -5910,6 +5946,25 @@ async function loadCloudData() {
         // Re-render tracks to show updated profile picture
         console.log('✅ Profile picture loaded, re-rendering tracks');
         renderPopularTracks();
+      }
+      
+      // Load custom glow color from database
+      if (profileData.glow_color) {
+        console.log('✨ Loading custom glow color:', profileData.glow_color);
+        customGlowColor = profileData.glow_color;
+        
+        // Update the theme to use the custom glow
+        if (!viewingUserId && !window.profileBackgroundLocked) {
+          generateCompleteTheme(profileBackground || currentSiteBackgroundColor || '#050d1a');
+        }
+        
+        // Update the color picker if it exists
+        const glowPicker = document.getElementById('customGlowPicker');
+        if (glowPicker) glowPicker.value = profileData.glow_color;
+        
+        console.log('✅ Custom glow color loaded');
+      } else {
+        customGlowColor = null;
       }
       
       // Load banner from database (can be image URL, base64, or color)
