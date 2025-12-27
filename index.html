@@ -6623,18 +6623,18 @@ async function loadFollowers(userId) {
   const followersCount = document.getElementById('followersCount');
   
   try {
-    // Get all users who follow the target user
-    const { data, error } = await supabase
+    // First, just get the follower IDs
+    const { data: followsData, error } = await supabase
       .from('follows')
-      .select('follower_id, profiles!follows_follower_id_fkey(id, username, display_name, profile_picture)')
+      .select('follower_id')
       .eq('following_id', targetUserId);
     
     if (error) throw error;
     
     // Update count
-    followersCount.textContent = data.length + ' Follower' + (data.length !== 1 ? 's' : '');
+    followersCount.textContent = followsData.length + ' Follower' + (followsData.length !== 1 ? 's' : '');
     
-    if (!data || data.length === 0) {
+    if (!followsData || followsData.length === 0) {
       followersList.innerHTML = '';
       followersEmpty.style.display = 'block';
       return;
@@ -6642,17 +6642,28 @@ async function loadFollowers(userId) {
     
     followersEmpty.style.display = 'none';
     
-    // Render followers
+    // Now fetch each follower's profile separately
     let html = '';
-    for (let i = 0; i < data.length; i++) {
-      const follower = data[i].profiles;
-      if (!follower) continue;
+    for (let i = 0; i < followsData.length; i++) {
+      const followerId = followsData[i].follower_id;
       
-      const displayName = follower.display_name || follower.username;
-      const avatar = follower.profile_picture || '';
+      // Fetch the profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, profile_picture')
+        .eq('id', followerId)
+        .single();
+      
+      if (profileError || !profile) {
+        console.error('Error fetching follower profile:', profileError);
+        continue;
+      }
+      
+      const displayName = profile.display_name || profile.username;
+      const avatar = profile.profile_picture || '';
       
       html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
-      html += '<div onclick="viewUserProfile(\'' + follower.id + '\')" style="cursor:pointer">';
+      html += '<div onclick="viewUserProfile(\'' + profile.id + '\')" style="cursor:pointer">';
       
       if (avatar) {
         html += '<div style="width:80px;height:80px;margin:0 auto 1rem;border-radius:50%;background:url(\'' + avatar + '\');background-size:cover;background-position:center"></div>';
@@ -6661,7 +6672,7 @@ async function loadFollowers(userId) {
       }
       
       html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">' + displayName + '</h3>';
-      html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + follower.username + '</p>';
+      html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + profile.username + '</p>';
       html += '</div></div>';
     }
     
@@ -6684,18 +6695,18 @@ async function loadFollowing(userId) {
   const followingCount = document.getElementById('followingCount');
   
   try {
-    // Get all users that the target user follows
-    const { data, error } = await supabase
+    // First, just get the following IDs
+    const { data: followsData, error } = await supabase
       .from('follows')
-      .select('following_id, profiles!follows_following_id_fkey(id, username, display_name, profile_picture)')
+      .select('following_id')
       .eq('follower_id', targetUserId);
     
     if (error) throw error;
     
     // Update count
-    followingCount.textContent = data.length + ' Following';
+    followingCount.textContent = followsData.length + ' Following';
     
-    if (!data || data.length === 0) {
+    if (!followsData || followsData.length === 0) {
       followingList.innerHTML = '';
       followingEmpty.style.display = 'block';
       return;
@@ -6703,17 +6714,28 @@ async function loadFollowing(userId) {
     
     followingEmpty.style.display = 'none';
     
-    // Render following
+    // Now fetch each profile separately
     let html = '';
-    for (let i = 0; i < data.length; i++) {
-      const following = data[i].profiles;
-      if (!following) continue;
+    for (let i = 0; i < followsData.length; i++) {
+      const followingId = followsData[i].following_id;
       
-      const displayName = following.display_name || following.username;
-      const avatar = following.profile_picture || '';
+      // Fetch the profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, profile_picture')
+        .eq('id', followingId)
+        .single();
+      
+      if (profileError || !profile) {
+        console.error('Error fetching following profile:', profileError);
+        continue;
+      }
+      
+      const displayName = profile.display_name || profile.username;
+      const avatar = profile.profile_picture || '';
       
       html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
-      html += '<div onclick="viewUserProfile(\'' + following.id + '\')" style="cursor:pointer">';
+      html += '<div onclick="viewUserProfile(\'' + profile.id + '\')" style="cursor:pointer">';
       
       if (avatar) {
         html += '<div style="width:80px;height:80px;margin:0 auto 1rem;border-radius:50%;background:url(\'' + avatar + '\');background-size:cover;background-position:center"></div>';
@@ -6722,11 +6744,11 @@ async function loadFollowing(userId) {
       }
       
       html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">' + displayName + '</h3>';
-      html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + following.username + '</p>';
+      html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + profile.username + '</p>';
       html += '</div>';
       
       // Add unfollow button
-      html += '<button onclick="event.stopPropagation();toggleFollowFromProfile(\'' + following.id + '\')" class="btn btn-primary" style="width:100%;padding:0.5rem;font-size:0.875rem;margin-top:1rem;background:rgba(255,255,255,0.1)">Following</button>';
+      html += '<button onclick="event.stopPropagation();toggleFollowFromProfile(\'' + profile.id + '\')" class="btn btn-primary" style="width:100%;padding:0.5rem;font-size:0.875rem;margin-top:1rem;background:rgba(255,255,255,0.1)">Following</button>';
       html += '</div>';
     }
     
