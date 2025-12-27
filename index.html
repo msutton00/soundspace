@@ -4920,6 +4920,11 @@ async function togglePlay(trackId) {
       // OPTIMIZED: Set preload to 'auto' for faster loading
       audioPlayer.preload = 'auto';
       
+      // Initialize audio analyzer for bass visualization (only once)
+      if (!audioContext) {
+        initAudioAnalyzer();
+      }
+      
       // Set audio source
       audioPlayer.src = audioUrl;
       
@@ -5109,11 +5114,36 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Bass-reactive player bar glow
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
+var audioSourceConnected = false; // Track if we've connected the source
 
 function initAudioAnalyzer() {
-  // DISABLED - Bass visualization disabled to keep audio working
-  // Will re-enable in future update
-  console.log('Bass visualization temporarily disabled');
+  // Create audio context and analyser
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+  }
+  
+  // CRITICAL FIX: Only connect source ONCE
+  // Calling createMediaElementSource multiple times breaks audio
+  if (!audioSourceConnected) {
+    try {
+      const source = audioContext.createMediaElementSource(audioPlayer);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      audioSourceConnected = true;
+      console.log('✅ Audio routing connected: audioPlayer → analyser → speakers');
+    } catch (e) {
+      console.error('Failed to connect audio source:', e);
+    }
+  }
+  
+  // Resume context if suspended
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
 }
 
 function startBassReaction() {
