@@ -2893,7 +2893,13 @@ async function changeProfileColor(color) {
 }
 
 // Change site-wide glow color
-function changeSiteGlowColor(color) {
+async function changeSiteGlowColor(color) {
+  // Show immediate "Saving..." feedback
+  const startDiv = document.createElement('div');
+  startDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:blue;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+  startDiv.textContent = '⏳ Saving glow color: ' + color;
+  document.body.appendChild(startDiv);
+  
   customGlowColor = color;
   
   // Calculate contrasting text color for buttons
@@ -2910,14 +2916,49 @@ function changeSiteGlowColor(color) {
   // Update picker
   document.getElementById('customGlowPicker').value = color;
   
-  // Save
+  // Save to localStorage
   saveData();
   
   console.log('✨ Glow color changed to:', color, 'with text color:', textColor);
+  
+  // SAVE TO DATABASE
+  if (supabase && currentUser) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ glow_color: color })
+        .eq('id', currentUser.id);
+      
+      startDiv.remove();
+      
+      if (error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;max-width:400px;';
+        errorDiv.innerHTML = '<strong>❌ ERROR SAVING GLOW:</strong><br>' + error.message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 10000);
+      } else {
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+        successDiv.innerHTML = '✅ Glow color saved!<br><br><strong>Reload page to test persistence</strong>';
+        document.body.appendChild(successDiv);
+        setTimeout(() => successDiv.remove(), 5000);
+      }
+    } catch (err) {
+      startDiv.remove();
+      const exceptionDiv = document.createElement('div');
+      exceptionDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+      exceptionDiv.textContent = 'EXCEPTION: ' + err.message;
+      document.body.appendChild(exceptionDiv);
+      setTimeout(() => exceptionDiv.remove(), 5000);
+    }
+  } else {
+    startDiv.remove();
+  }
 }
 
 // Reset site-wide glow color to auto
-function resetSiteGlowColor() {
+async function resetSiteGlowColor() {
   customGlowColor = null;
   
   // Regenerate theme to get auto accent color
@@ -2931,6 +2972,36 @@ function resetSiteGlowColor() {
   saveData();
   
   console.log('✨ Glow color reset to auto');
+  
+  // SAVE TO DATABASE
+  if (supabase && currentUser) {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ glow_color: null })
+        .eq('id', currentUser.id);
+      
+      if (error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+        errorDiv.textContent = 'ERROR RESETTING GLOW: ' + error.message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 5000);
+      } else {
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+        successDiv.textContent = '✅ Glow color reset!';
+        document.body.appendChild(successDiv);
+        setTimeout(() => successDiv.remove(), 3000);
+      }
+    } catch (err) {
+      const exceptionDiv = document.createElement('div');
+      exceptionDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+      exceptionDiv.textContent = 'EXCEPTION: ' + err.message;
+      document.body.appendChild(exceptionDiv);
+      setTimeout(() => exceptionDiv.remove(), 5000);
+    }
+  }
 }
 
 // Save account info
