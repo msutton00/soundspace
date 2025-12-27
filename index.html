@@ -2944,8 +2944,9 @@ function applyProfileStyles() {
     profileBannerEl.style.backgroundSize = 'cover';
     profileBannerEl.style.backgroundPosition = 'center';
   } else {
-    // No image - clear inline styles to show CSS default (foggy)
-    profileBannerEl.style.background = '';
+    // No image - clear ALL background styles
+    profileBannerEl.style.background = 'transparent';
+    profileBannerEl.style.backgroundImage = 'none';
     profileBannerEl.style.backgroundSize = '';
     profileBannerEl.style.backgroundPosition = '';
   }
