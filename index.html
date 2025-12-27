@@ -250,7 +250,7 @@ function clearAuthMessage() {
 :root{--bg-primary:#050d1a;--bg-secondary:#0a1929;--bg-tertiary:#132f4c;--accent:#5090d3;--text-primary:#fff;--text-secondary:#8ba3bf;--border-color:rgba(176,196,222,0.12);--border-dark:rgba(0,0,0,0.3);--nav-hue:210;--nav-sat:40%;--nav-light:20%}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sans-serif;background-color:var(--bg-primary);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;transition:background-color .3s ease}
-.top-nav{background:hsla(var(--nav-hue, 210),var(--nav-sat, 40%),var(--nav-light, 20%),0.7);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border-color);padding:.75rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;height:64px;transition:all .3s ease}
+.top-nav{background:hsla(var(--nav-hue, 210),var(--nav-sat, 40%),var(--nav-light, 20%),0.7);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border-color);padding:.75rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000;height:64px;transition:all .3s ease}
 .logo{font-size:1.5rem;font-weight:800;cursor:pointer;letter-spacing:-.8px;background:linear-gradient(135deg,var(--accent-light) 0%,var(--text-primary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px var(--accent-light)) drop-shadow(0 0 40px var(--accent-light)) drop-shadow(0 0 60px var(--accent-light))}
 .nav-center{display:flex;align-items:center;gap:1rem;flex:1;max-width:600px;margin:0 2rem}
 .nav-links{display:flex;gap:2rem;align-items:center}
@@ -265,9 +265,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .search-tab.active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
 .search-input:focus{outline:0;background:var(--bg-tertiary);border-color:var(--accent)}
 .search-input::placeholder{color:var(--text-secondary);opacity:.6}
-.profile-menu{position:relative;z-index:1100}
-.profile-btn{background:rgba(255,255,255,.08);border:1px solid var(--border-color);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;transition:all .2s;font-weight:600;z-index:1100;position:relative;pointer-events:auto}
-.profile-btn:hover{background:rgba(255,255,255,.12);border-color:var(--accent)}
+.profile-menu{position:relative;z-index:10001}
+.profile-btn{background:rgba(255,255,255,.08);border:1px solid var(--border-color);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;transition:all .2s;font-weight:600;z-index:10001;position:relative;pointer-events:auto!important}
+.profile-btn:hover{background:rgba(255,255,255,.12);border-color:var(--accent);box-shadow:0 0 20px rgba(var(--accent-rgb),0.6),0 0 40px rgba(var(--accent-rgb),0.3)}
 .dropdown{position:absolute;top:50px;right:0;background:hsla(var(--nav-hue, 210),var(--nav-sat, 40%),var(--nav-light, 20%),0.95);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--border-color);border-radius:8px;min-width:200px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
 .dropdown.show{display:block}
 .dropdown-item{padding:.875rem 1rem;cursor:pointer;transition:background .2s;font-size:.875rem;font-weight:500;color:var(--text-secondary)}
@@ -2583,8 +2583,12 @@ async function setProfileGlowColor() {
   
   console.log('🎨 Setting profile glow to:', color);
   
+  // Calculate contrasting text color
+  const textColor = getContrastColor(color);
+  
   // Apply IMMEDIATELY to profile page
   document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent-text', textColor);
   const rgb = hexToRgb(color);
   document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
   
@@ -4219,9 +4223,18 @@ function togglePlaylistExpansion(playlistId) {
 function showScreen(screenName) {
   console.log('📺 Showing screen:', screenName);
   
-  // CRITICAL: Ensure profile menu is visible if user is logged in
+  // CRITICAL: Ensure profile menu is visible and clickable if user is logged in
   if (currentUser && document.getElementById('profileMenuContainer')) {
-    document.getElementById('profileMenuContainer').style.display = 'block';
+    const profileMenu = document.getElementById('profileMenuContainer');
+    profileMenu.style.display = 'block';
+    profileMenu.style.pointerEvents = 'auto';
+    profileMenu.style.zIndex = '10001';
+    
+    const profileBtn = document.getElementById('profileBtn');
+    if (profileBtn) {
+      profileBtn.style.pointerEvents = 'auto';
+      profileBtn.style.zIndex = '10001';
+    }
   }
   
   // If leaving profile screen, restore site background and UNLOCK
@@ -4243,7 +4256,9 @@ function showScreen(screenName) {
     // RESTORE SITE-WIDE GLOW (not profile glow)
     if (customGlowColor) {
       console.log('🔄 Restoring site glow:', customGlowColor);
+      const textColor = getContrastColor(customGlowColor);
       document.documentElement.style.setProperty('--accent', customGlowColor);
+      document.documentElement.style.setProperty('--accent-text', textColor);
       const rgb = hexToRgb(customGlowColor);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
@@ -4255,6 +4270,8 @@ function showScreen(screenName) {
       setTimeout(() => msg.remove(), 2000);
     } else {
       console.log('🔄 No custom site glow, using auto');
+      // Reset to default white text on accent
+      document.documentElement.style.setProperty('--accent-text', '#ffffff');
     }
   }
   
@@ -4395,7 +4412,9 @@ function showScreen(screenName) {
       // APPLY PROFILE-SPECIFIC GLOW (if set)
       if (profileCustomization.glowColor) {
         console.log('✨ Applying profile glow color:', profileCustomization.glowColor);
+        const textColor = getContrastColor(profileCustomization.glowColor);
         document.documentElement.style.setProperty('--accent', profileCustomization.glowColor);
+        document.documentElement.style.setProperty('--accent-text', textColor);
         const rgb = hexToRgb(profileCustomization.glowColor);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
         
@@ -7469,6 +7488,28 @@ setInterval(() => {
     }
   }
 }, 50); // Check every 50ms - VERY aggressive
+
+// CRITICAL: Periodic check to ensure profile button stays clickable
+setInterval(() => {
+  if (currentUser) {
+    const profileMenu = document.getElementById('profileMenuContainer');
+    const profileBtn = document.getElementById('profileBtn');
+    
+    if (profileMenu && profileMenu.style.display !== 'block') {
+      profileMenu.style.display = 'block';
+    }
+    
+    if (profileMenu) {
+      profileMenu.style.pointerEvents = 'auto';
+      profileMenu.style.zIndex = '10001';
+    }
+    
+    if (profileBtn) {
+      profileBtn.style.pointerEvents = 'auto';
+      profileBtn.style.zIndex = '10001';
+    }
+  }
+}, 100); // Check every 100ms
 
 </script>
 </body>
