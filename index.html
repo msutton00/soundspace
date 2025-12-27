@@ -5123,7 +5123,12 @@ function startBassReaction() {
   const repeatBtn = document.getElementById('repeatBtn');
   const menuBtn = document.getElementById('playerMenuBtn');
   
-  if (!playBtn) return;
+  console.log('🎵 Starting bass reaction visualization');
+  
+  if (!playBtn) {
+    console.warn('Play button not found');
+    return;
+  }
   
   if (bassReactiveInterval) clearInterval(bassReactiveInterval);
   
@@ -5189,8 +5194,6 @@ function stopBassReaction() {
 
 // Hook into audio player events
 audioPlayer.addEventListener('play', () => {
-  if (!audioContext) initAudioAnalyzer();
-  if (audioContext.state === 'suspended') audioContext.resume();
   startBassReaction();
 });
 
