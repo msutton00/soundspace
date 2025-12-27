@@ -2894,12 +2894,6 @@ async function changeProfileColor(color) {
 
 // Change site-wide glow color
 async function changeSiteGlowColor(color) {
-  // Show immediate "Saving..." feedback
-  const startDiv = document.createElement('div');
-  startDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:blue;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-  startDiv.textContent = '⏳ Saving glow color: ' + color;
-  document.body.appendChild(startDiv);
-  
   customGlowColor = color;
   
   // Calculate contrasting text color for buttons
@@ -2919,41 +2913,16 @@ async function changeSiteGlowColor(color) {
   // Save to localStorage
   saveData();
   
-  console.log('✨ Glow color changed to:', color, 'with text color:', textColor);
-  
-  // SAVE TO DATABASE
+  // Save to database
   if (supabase && currentUser) {
     try {
-      const { data, error } = await supabase
+      await supabase
         .from('profiles')
         .update({ glow_color: color })
         .eq('id', currentUser.id);
-      
-      startDiv.remove();
-      
-      if (error) {
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;max-width:400px;';
-        errorDiv.innerHTML = '<strong>❌ ERROR SAVING GLOW:</strong><br>' + error.message;
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 10000);
-      } else {
-        const successDiv = document.createElement('div');
-        successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-        successDiv.innerHTML = '✅ Glow color saved!<br><br><strong>Reload page to test persistence</strong>';
-        document.body.appendChild(successDiv);
-        setTimeout(() => successDiv.remove(), 5000);
-      }
     } catch (err) {
-      startDiv.remove();
-      const exceptionDiv = document.createElement('div');
-      exceptionDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-      exceptionDiv.textContent = 'EXCEPTION: ' + err.message;
-      document.body.appendChild(exceptionDiv);
-      setTimeout(() => exceptionDiv.remove(), 5000);
+      console.error('Error saving glow color:', err);
     }
-  } else {
-    startDiv.remove();
   }
 }
 
@@ -2971,35 +2940,15 @@ async function resetSiteGlowColor() {
   document.getElementById('customGlowPicker').value = '';
   saveData();
   
-  console.log('✨ Glow color reset to auto');
-  
-  // SAVE TO DATABASE
+  // Save to database
   if (supabase && currentUser) {
     try {
-      const { data, error } = await supabase
+      await supabase
         .from('profiles')
         .update({ glow_color: null })
         .eq('id', currentUser.id);
-      
-      if (error) {
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-        errorDiv.textContent = 'ERROR RESETTING GLOW: ' + error.message;
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 5000);
-      } else {
-        const successDiv = document.createElement('div');
-        successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-        successDiv.textContent = '✅ Glow color reset!';
-        document.body.appendChild(successDiv);
-        setTimeout(() => successDiv.remove(), 3000);
-      }
     } catch (err) {
-      const exceptionDiv = document.createElement('div');
-      exceptionDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-      exceptionDiv.textContent = 'EXCEPTION: ' + err.message;
-      document.body.appendChild(exceptionDiv);
-      setTimeout(() => exceptionDiv.remove(), 5000);
+      console.error('Error resetting glow color:', err);
     }
   }
 }
@@ -3110,82 +3059,20 @@ async function saveProfile() {
 }
 
 async function changeGlowColor(color) {
-  console.log('🎨 changeGlowColor called with:', color);
-  
-  // Show immediate "Saving..." feedback
-  const startDiv = document.createElement('div');
-  startDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:blue;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-  startDiv.textContent = '⏳ Saving glow color: ' + color;
-  document.body.appendChild(startDiv);
-  
   customGlowColor = color;
   generateCompleteTheme(profileBackground);
   document.getElementById('customGlowPicker').value = color;
   
-  // Save to database - SAME PATTERN AS BACKGROUND COLOR
+  // Save to database
   if (supabase && currentUser) {
     try {
-      console.log('💾 SAVING glow color to database:', color);
-      console.log('💾 Current user ID:', currentUser.id);
-      
-      const { data, error } = await supabase
+      await supabase
         .from('profiles')
-        .update({ 
-          glow_color: color
-        })
+        .update({ glow_color: color })
         .eq('id', currentUser.id);
-      
-      startDiv.remove(); // Remove "Saving..." message
-      
-      if (error) {
-        console.error('❌ DATABASE ERROR:', error);
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;max-width:400px;';
-        errorDiv.innerHTML = '<strong>❌ ERROR SAVING GLOW:</strong><br>' + error.message + '<br><br>Error code: ' + (error.code || 'unknown');
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 10000);
-      } else {
-        console.log('✅ SAVED TO DATABASE');
-        
-        // VERIFY the save by reading it back
-        const { data: verifyData, error: verifyError } = await supabase
-          .from('profiles')
-          .select('glow_color')
-          .eq('id', currentUser.id)
-          .single();
-        
-        if (verifyData) {
-          console.log('✅ VERIFIED - Glow color in database:', verifyData);
-          
-          const successDiv = document.createElement('div');
-          successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-          successDiv.innerHTML = '✅ Glow color saved!<br>Value: ' + verifyData.glow_color + '<br><br><strong>Reload page to test persistence</strong>';
-          document.body.appendChild(successDiv);
-          setTimeout(() => successDiv.remove(), 8000);
-        } else {
-          console.error('⚠️ Save succeeded but verification failed');
-          const warnDiv = document.createElement('div');
-          warnDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:orange;color:black;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-          warnDiv.textContent = '⚠️ Saved but could not verify';
-          document.body.appendChild(warnDiv);
-          setTimeout(() => warnDiv.remove(), 3000);
-        }
-      }
     } catch (err) {
-      console.error('❌ EXCEPTION:', err);
-      const exceptionDiv = document.createElement('div');
-      exceptionDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-      exceptionDiv.textContent = 'EXCEPTION: ' + err.message;
-      document.body.appendChild(exceptionDiv);
-      setTimeout(() => exceptionDiv.remove(), 5000);
+      console.error('Error saving glow color:', err);
     }
-  } else {
-    console.warn('⚠️ Cannot save - supabase or currentUser missing');
-    const warnDiv = document.createElement('div');
-    warnDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:orange;color:black;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-    warnDiv.textContent = '⚠️ Not logged in';
-    document.body.appendChild(warnDiv);
-    setTimeout(() => warnDiv.remove(), 3000);
   }
   
   saveData(); // Also save to localStorage for backup
@@ -3199,18 +3086,12 @@ async function resetGlowColor() {
   // Save to database
   if (supabase && currentUser) {
     try {
-      const { error } = await supabase
+      await supabase
         .from('profiles')
         .update({ glow_color: null })
         .eq('id', currentUser.id);
-      
-      if (error) {
-        console.error('Error resetting glow color:', error);
-      } else {
-        console.log('✨ Glow color reset in database');
-      }
     } catch (err) {
-      console.error('Exception resetting glow color:', err);
+      console.error('Error resetting glow color:', err);
     }
   }
   
@@ -6009,42 +5890,16 @@ async function loadCloudData() {
       console.log('Background color from DB:', profileData.background_color);
       console.log('Profile picture from DB:', profileData.profile_picture);
       
-      // CRITICAL: Load custom glow color FIRST, before generateCompleteTheme is called
-      console.log('🔍 Checking for glow_color in profileData...');
-      console.log('🔍 profileData.glow_color =', profileData.glow_color);
-      console.log('🔍 Full profileData keys:', Object.keys(profileData));
-      
-      // CREATE VISIBLE DEBUG PANEL
-      const debugPanel = document.createElement('div');
-      debugPanel.id = 'glowDebugPanel';
-      debugPanel.style.cssText = 'position:fixed;top:80px;right:20px;background:rgba(0,0,0,0.9);color:white;padding:20px;border-radius:8px;z-index:99999;font-size:12px;max-width:300px;font-family:monospace;';
-      debugPanel.innerHTML = `
-        <div style="font-weight:bold;margin-bottom:10px;">🔍 GLOW COLOR DEBUG</div>
-        <div>Database has glow_color: ${profileData.glow_color ? 'YES ✅' : 'NO ❌'}</div>
-        <div>Value from DB: ${profileData.glow_color || 'null'}</div>
-        <div>All DB fields: ${Object.keys(profileData).join(', ')}</div>
-        <button onclick="this.parentElement.remove()" style="margin-top:10px;padding:5px 10px;background:red;color:white;border:none;border-radius:4px;cursor:pointer;">Close</button>
-      `;
-      document.body.appendChild(debugPanel);
-      setTimeout(() => debugPanel.remove(), 15000); // Auto-remove after 15 seconds
-      
+      // Load custom glow color FIRST, before generateCompleteTheme is called
       if (profileData.glow_color) {
-        console.log('✨ Loading custom glow color:', profileData.glow_color);
         customGlowColor = profileData.glow_color;
         
         // Update the color picker if it exists
         const glowPicker = document.getElementById('customGlowPicker');
         if (glowPicker) {
           glowPicker.value = profileData.glow_color;
-          console.log('✅ Updated glow picker value to:', profileData.glow_color);
-        } else {
-          console.log('⚠️ Glow picker element not found');
         }
-        
-        console.log('✅ Custom glow color loaded and set BEFORE theme generation');
-        console.log('✅ customGlowColor global variable is now:', customGlowColor);
       } else {
-        console.log('⚠️ No glow color in database (profileData.glow_color is', profileData.glow_color, ')');
         customGlowColor = null;
       }
       
