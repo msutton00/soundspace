@@ -265,8 +265,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .search-tab.active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
 .search-input:focus{outline:0;background:var(--bg-tertiary);border-color:var(--accent)}
 .search-input::placeholder{color:var(--text-secondary);opacity:.6}
-.profile-menu{position:relative;z-index:100}
-.profile-btn{background:rgba(255,255,255,.08);border:1px solid var(--border-color);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;transition:all .2s;font-weight:600;z-index:100;position:relative;pointer-events:auto}
+.profile-menu{position:relative;z-index:1100}
+.profile-btn{background:rgba(255,255,255,.08);border:1px solid var(--border-color);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;transition:all .2s;font-weight:600;z-index:1100;position:relative;pointer-events:auto}
 .profile-btn:hover{background:rgba(255,255,255,.12);border-color:var(--accent)}
 .dropdown{position:absolute;top:50px;right:0;background:hsla(var(--nav-hue, 210),var(--nav-sat, 40%),var(--nav-light, 20%),0.95);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--border-color);border-radius:8px;min-width:200px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
 .dropdown.show{display:block}
@@ -4134,6 +4134,11 @@ function togglePlaylistExpansion(playlistId) {
 function showScreen(screenName) {
   console.log('📺 Showing screen:', screenName);
   
+  // CRITICAL: Ensure profile menu is visible if user is logged in
+  if (currentUser && document.getElementById('profileMenuContainer')) {
+    document.getElementById('profileMenuContainer').style.display = 'block';
+  }
+  
   // If leaving profile screen, restore site background and UNLOCK
   const currentlyOnProfile = document.getElementById('profileScreen')?.classList.contains('active');
   if (currentlyOnProfile && screenName !== 'profile') {
@@ -5164,46 +5169,50 @@ function startBassReaction() {
   if (bassReactiveInterval) clearInterval(bassReactiveInterval);
   
   bassReactiveInterval = setInterval(() => {
+    const playBtn = document.getElementById('playerPlayBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const menuBtn = document.getElementById('playerMenuBtn');
+    
+    if (!playBtn) return;
+    
     if (!audioPlayer.paused && currentPlayingId) {
-      analyser.getByteFrequencyData(dataArray);
+      // Breathing effect - smooth 4-second cycle
+      const breathCycle = 4000; // 4 seconds in milliseconds
+      const time = Date.now();
+      const phase = (time % breathCycle) / breathCycle; // 0 to 1
       
-      // Get bass frequencies (roughly 60-250 Hz, which is bins 0-10 for better coverage)
-      let bassSum = 0;
-      for (let i = 0; i < 10; i++) {
-        bassSum += dataArray[i];
-      }
-      const bassAverage = bassSum / 10;
+      // Sine wave for smooth breathing (0 to 1 to 0)
+      const breathIntensity = (Math.sin(phase * Math.PI * 2 - Math.PI / 2) + 1) / 2;
       
-      // Normalize bass intensity (0-255 range to 0-1)
-      const rawIntensity = bassAverage / 255;
+      // Scale intensity
+      const intensity = breathIntensity * 0.6; // 0 to 0.6
       
-      // Apply EXTREME exponential curve and threshold
-      // Cube it for even more dramatic response, then amplify
-      const bassIntensity = Math.pow(rawIntensity, 3) * 3; // Cube and 3x amplify
+      // Create glow
+      const glowSize = 10 + (intensity * 10); // 10px to 20px
+      const glowOpacity = 0.3 + (intensity * 0.5); // 0.3 to 0.8 opacity
       
-      // Only show glow if intensity is above threshold (removes constant glow)
-      const threshold = 0.05;
-      const finalIntensity = bassIntensity > threshold ? bassIntensity : 0;
+      // Triple-layer breathing glow
+      const buttonGlow = `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowOpacity}), 
+         0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowOpacity * 0.7}),
+         0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowOpacity * 0.4})`;
       
-      // Create INTENSE, FOCUSED glow - smaller radius, higher opacity
-      const glowSize = finalIntensity * 15; // 0-15px (much smaller!)
-      const glowIntensity = finalIntensity * 2; // Boost intensity
-      
-      // Triple-layer INTENSE glow with small radius
-      const buttonGlow = glowSize > 0 
-        ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
-           0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
-           0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
-        : 'none';
-      
-      // Apply to all buttons - NO TRANSFORM
+      // Apply to all buttons
       playBtn.style.boxShadow = buttonGlow;
       if (prevBtn) prevBtn.style.boxShadow = buttonGlow;
       if (nextBtn) nextBtn.style.boxShadow = buttonGlow;
       if (repeatBtn) repeatBtn.style.boxShadow = buttonGlow;
       if (menuBtn) menuBtn.style.boxShadow = buttonGlow;
+    } else {
+      // Reset when paused
+      playBtn.style.boxShadow = '';
+      if (prevBtn) prevBtn.style.boxShadow = '';
+      if (nextBtn) nextBtn.style.boxShadow = '';
+      if (repeatBtn) repeatBtn.style.boxShadow = '';
+      if (menuBtn) menuBtn.style.boxShadow = '';
     }
-  }, 30); // Faster update (30ms) for more responsive feel
+  }, 30); // Update every 30ms for smooth animation
 }
 
 function stopBassReaction() {
