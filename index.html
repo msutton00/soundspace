@@ -2581,14 +2581,19 @@ async function setProfileGlowColor() {
   const color = document.getElementById('glowColorPicker').value;
   profileCustomization.glowColor = color;
   
-  // Apply ONLY to profile page (don't touch site-wide customGlowColor)
-  const profileScreen = document.getElementById('profileScreen');
-  if (profileScreen && profileScreen.classList.contains('active')) {
-    // Temporarily override accent for profile page
-    document.documentElement.style.setProperty('--accent', color);
-    const rgb = hexToRgb(color);
-    document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-  }
+  console.log('🎨 Setting profile glow to:', color);
+  
+  // Apply IMMEDIATELY to profile page
+  document.documentElement.style.setProperty('--accent', color);
+  const rgb = hexToRgb(color);
+  document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+  
+  // Show feedback
+  const msg = document.createElement('div');
+  msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:15px 20px;border-radius:8px;z-index:99999;';
+  msg.textContent = '✅ Profile glow applied: ' + color;
+  document.body.appendChild(msg);
+  setTimeout(() => msg.remove(), 3000);
   
   applyProfileCustomization();
   
@@ -2599,6 +2604,7 @@ async function setProfileGlowColor() {
         .from('profiles')
         .update({ profile_glow_color: color })
         .eq('id', currentUser.id);
+      console.log('✅ Saved profile glow to database');
     } catch (err) {
       console.error('Error saving profile glow color:', err);
     }
@@ -4236,9 +4242,19 @@ function showScreen(screenName) {
     
     // RESTORE SITE-WIDE GLOW (not profile glow)
     if (customGlowColor) {
+      console.log('🔄 Restoring site glow:', customGlowColor);
       document.documentElement.style.setProperty('--accent', customGlowColor);
       const rgb = hexToRgb(customGlowColor);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      
+      // Show visual confirmation
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
+      msg.textContent = 'Restored site glow: ' + customGlowColor;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 2000);
+    } else {
+      console.log('🔄 No custom site glow, using auto');
     }
   }
   
@@ -4382,6 +4398,22 @@ function showScreen(screenName) {
         document.documentElement.style.setProperty('--accent', profileCustomization.glowColor);
         const rgb = hexToRgb(profileCustomization.glowColor);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+        
+        // Show visual confirmation
+        const msg = document.createElement('div');
+        msg.style.cssText = 'position:fixed;top:20px;right:20px;background:blue;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
+        msg.textContent = 'Profile glow: ' + profileCustomization.glowColor;
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2000);
+      } else {
+        console.log('⚠️ No profile glow set, using site glow');
+        
+        // Show visual confirmation
+        const msg = document.createElement('div');
+        msg.style.cssText = 'position:fixed;top:20px;right:20px;background:orange;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
+        msg.textContent = 'Using site glow: ' + (customGlowColor || 'auto');
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2000);
       }
     } else if (screenName === 'settings') {
       // Load current display name and bio from profile
