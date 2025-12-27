@@ -5169,7 +5169,7 @@ function startBassReaction() {
   if (bassReactiveInterval) clearInterval(bassReactiveInterval);
   
   bassReactiveInterval = setInterval(() => {
-    const playBtn = document.getElementById('playerPlayBtn');
+    const playBtn = document.getElementById('playPauseBtn'); // FIXED: correct ID
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const repeatBtn = document.getElementById('repeatBtn');
@@ -5237,9 +5237,7 @@ function stopBassReaction() {
 
 // Hook into audio player events
 audioPlayer.addEventListener('play', () => {
-  if (!audioContext) initAudioAnalyzer();
-  if (audioContext.state === 'suspended') audioContext.resume();
-  startBassReaction();
+  startBassReaction(); // Start breathing glow effect
 });
 
 audioPlayer.addEventListener('pause', stopBassReaction);
