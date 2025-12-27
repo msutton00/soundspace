@@ -3846,16 +3846,35 @@ async function viewUserProfile(userId) {
       usernameAtEl.textContent = '@' + profile.username;
     }
     
-    // CRITICAL: Ensure banner content is visible
-    const bannerContent = bannerEl.querySelector('[style*="position:absolute;bottom:0"]');
-    if (bannerContent) {
-      bannerContent.style.display = 'flex';
+    // CRITICAL: Force all banner content to be visible with aggressive styling
+    if (usernameEl) {
+      usernameEl.style.display = 'block';
+      usernameEl.style.visibility = 'visible';
+      usernameEl.style.opacity = '1';
+    }
+    if (bioEl) {
+      bioEl.style.display = 'block';
+      bioEl.style.visibility = 'visible';
+      bioEl.style.opacity = '1';
+    }
+    if (usernameAtEl) {
+      usernameAtEl.style.display = 'block';
+      usernameAtEl.style.visibility = 'visible';
+      usernameAtEl.style.opacity = '1';
+    }
+    if (avatarEl) {
+      avatarEl.style.display = 'flex';
+      avatarEl.style.visibility = 'visible';
+      avatarEl.style.opacity = '1';
     }
     
-    // Ensure username, bio, etc are visible
-    if (usernameEl) usernameEl.style.display = 'block';
-    if (bioEl) bioEl.style.display = 'block';
-    if (usernameAtEl) usernameAtEl.style.display = 'block';
+    // Force the banner content container to show
+    const bannerContent = bannerEl.querySelector('[style*="position:absolute;bottom:0"]');
+    if (bannerContent) {
+      bannerContent.style.display = 'flex !important';
+      bannerContent.style.visibility = 'visible';
+      bannerContent.style.opacity = '1';
+    }
     
     // Get follower/following counts and update tabs
     const { data: followersData } = await supabase
@@ -7303,7 +7322,6 @@ setInterval(() => {
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      console.log('🔧 Auto-restored profile glow:', savedProfileGlowColor);
     }
     return; // Don't restore site stuff when on profile
   }
@@ -7324,7 +7342,6 @@ setInterval(() => {
         document.body.style.backgroundSize = '';
         document.body.style.backgroundPosition = '';
         document.body.style.backgroundAttachment = '';
-        console.log('🔧 Auto-restored site background color:', currentSiteBackgroundColor);
       }
     }
     
@@ -7342,19 +7359,17 @@ setInterval(() => {
         document.documentElement.style.setProperty('--accent-text', textColor);
         document.documentElement.style.setProperty('--accent-light', lightGlow);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-        console.log('🔧 Auto-restored custom glow color:', customGlowColor);
       }
     }
     
     // Restore playlists if they got cleared (but user is still logged in)
     if (currentUser && data.playlists && data.playlists.length > 0 && playlists.length === 0) {
       playlists = data.playlists;
-      console.log('🔧 Auto-restored playlists:', playlists.length);
     }
   } catch (e) {
-    console.error('Auto-restore error:', e);
+    // Silent error
   }
-}, 1000); // Check every second
+}, 2000); // Check every 2 seconds (reduced frequency)
 
 // ============================================
 // PLAYLIST CUSTOMIZATION SYSTEM
@@ -7637,7 +7652,6 @@ setInterval(() => {
     const profileScreen = document.getElementById('profileScreen');
     if (profileScreen && !profileScreen.classList.contains('has-background')) {
       profileScreen.classList.add('has-background');
-      console.log('🛡️ Re-added has-background class for viewed user');
     }
     
     if (expectedBg) {
@@ -7648,14 +7662,12 @@ setInterval(() => {
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundAttachment = 'fixed';
         document.body.style.backgroundColor = '';
-        console.log('🛡️ Restored viewed user profile background');
       }
     } else if (expectedColor) {
       const current = document.body.style.backgroundColor;
       if (current !== expectedColor) {
         document.body.style.backgroundImage = '';
         document.body.style.backgroundColor = expectedColor;
-        console.log('🛡️ Restored viewed user profile color');
       }
     }
     return;
@@ -7670,7 +7682,6 @@ setInterval(() => {
     const profileScreen = document.getElementById('profileScreen');
     if (profileScreen && !profileScreen.classList.contains('has-background')) {
       profileScreen.classList.add('has-background');
-      console.log('🛡️ Re-added has-background class');
     }
     
     // If it's been cleared, restore it
@@ -7680,7 +7691,6 @@ setInterval(() => {
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundAttachment = 'fixed';
       document.body.style.backgroundColor = '';
-      console.log('🛡️ Restored profile background image');
     }
   } else if (window.userProfileColor) {
     const current = document.body.style.backgroundColor;
@@ -7689,16 +7699,14 @@ setInterval(() => {
     const profileScreen = document.getElementById('profileScreen');
     if (profileScreen && !profileScreen.classList.contains('has-background')) {
       profileScreen.classList.add('has-background');
-      console.log('🛡️ Re-added has-background class for color');
     }
     
     if (current !== window.userProfileColor) {
       document.body.style.backgroundImage = '';
       document.body.style.backgroundColor = window.userProfileColor;
-      console.log('🛡️ Restored profile background color');
     }
   }
-}, 50); // Check every 50ms - VERY aggressive
+}, 100); // Check every 100ms (increased from 50ms)
 
 // CRITICAL: Periodic check to ensure profile button stays clickable
 setInterval(() => {
