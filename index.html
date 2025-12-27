@@ -3660,7 +3660,9 @@ async function viewUserProfile(userId) {
         profileBanner: profileBanner,
         siteTheme: currentSiteBackgroundColor || profileBackground, // Save current site theme
         bodyBgImage: document.body.style.backgroundImage, // Save body background image
-        bodyBgColor: document.body.style.backgroundColor // Save body background color
+        bodyBgColor: document.body.style.backgroundColor, // Save body background color
+        siteGlowColor: customGlowColor, // Save site glow
+        profileGlowColor: savedProfileGlowColor // Save own profile glow
       };
       console.log('📦 Saved original profile data and site theme:', window.originalProfileData);
     }
@@ -3799,6 +3801,35 @@ async function viewUserProfile(userId) {
     if (profileColorTheme) {
       console.log('🎨 Applying profile color theme:', profileColorTheme);
       generateCompleteTheme(profileColorTheme);
+    }
+    
+    // APPLY THEIR PROFILE GLOW (if they have one set)
+    if (profile.profile_glow_color) {
+      console.log('✨ Applying viewed user profile glow:', profile.profile_glow_color);
+      
+      // Set their profile glow as active
+      profileCustomization.glowColor = profile.profile_glow_color;
+      
+      const textColor = getContrastColor(profile.profile_glow_color);
+      const rgb = hexToRgb(profile.profile_glow_color);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+      
+      document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
+      document.documentElement.style.setProperty('--accent-text', textColor);
+      document.documentElement.style.setProperty('--accent-light', lightGlow);
+      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      
+      // Show notification
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
+      msg.textContent = 'Viewing profile glow: ' + profile.profile_glow_color;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 2000);
+    } else {
+      console.log('⚠️ Viewed user has no profile glow set');
+      // Clear profile glow so their background theme glow shows
+      profileCustomization.glowColor = null;
     }
     
     // Set avatar - IMPORTANT: Use proper URL formatting and check if it exists
@@ -4289,6 +4320,7 @@ function showScreen(screenName) {
     // UNLOCK background
     window.profileBackgroundLocked = false;
     window.viewingUserProfileData = null; // Clear viewed user data
+    viewingUserId = null; // Clear viewing state
     
     // CRITICAL: Clear profile glow so site glow can be used
     profileCustomization.glowColor = null;
@@ -4413,6 +4445,16 @@ function showScreen(screenName) {
         if (window.originalProfileData.siteTheme) {
           console.log('🎨 Restoring original site theme:', window.originalProfileData.siteTheme);
           generateCompleteTheme(window.originalProfileData.siteTheme);
+        }
+        
+        // Restore original glow colors
+        if (window.originalProfileData.siteGlowColor) {
+          customGlowColor = window.originalProfileData.siteGlowColor;
+          console.log('✨ Restored site glow:', customGlowColor);
+        }
+        if (window.originalProfileData.profileGlowColor) {
+          savedProfileGlowColor = window.originalProfileData.profileGlowColor;
+          console.log('✨ Restored profile glow:', savedProfileGlowColor);
         }
         
         // Restore body background image/color
