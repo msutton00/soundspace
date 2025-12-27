@@ -7075,10 +7075,44 @@ async function loadUserTracks(userId) {
   if (!targetUserId) return;
   
   const tracksSection = document.getElementById('profileTracksSection');
+  const trackList = document.getElementById('profileTrackList');
+  const emptyTracks = document.getElementById('profileEmptyTracks');
   
   if (userId && userId !== currentUser.id) {
-    // Viewing someone else - show placeholder
-    tracksSection.innerHTML = '<div style="text-align:center;padding:4rem 2rem;color:var(--text-secondary)"><div style="font-size:3rem;margin-bottom:1rem">🎵</div><h3 style="font-size:1.5rem;margin-bottom:0.5rem;color:var(--text-primary)">User Tracks</h3><p>Public track viewing coming soon!</p></div>';
+    // Viewing someone else - load their tracks from database
+    try {
+      const { data: userTracks, error } = await supabase
+        .from('tracks')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      if (!userTracks || userTracks.length === 0) {
+        trackList.innerHTML = '';
+        emptyTracks.style.display = 'block';
+      } else {
+        emptyTracks.style.display = 'none';
+        trackList.innerHTML = userTracks.map((track, index) => `
+          <div class="track">
+            <div class="track-content">
+              <div class="track-number">${index + 1}</div>
+              ${track.album_art ? `<div class="track-art" style="background-image:url(${track.album_art})"></div>` : '<div class="track-art">♪</div>'}
+              <button class="play-btn" onclick="alert('Playing other users tracks coming soon!')">▶</button>
+              <div class="track-info">
+                <div class="track-title">${track.title}</div>
+                <div class="track-artist">${track.artist} • ${track.album}</div>
+                <div class="track-duration">${formatDuration(track.duration)}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      console.error('Error loading user tracks:', err);
+      trackList.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Error loading tracks</div>';
+    }
   } else {
     // Viewing own profile - use existing renderProfile
     renderProfile();
@@ -7243,13 +7277,18 @@ setInterval(() => {
     }
     
     // Restore custom glow color
-    if (customGlowColor) {
+    if (customGlowColor && !profileCustomization.glowColor) {
+      // Only restore site glow if profile glow is NOT active
       const currentAccent = document.documentElement.style.getPropertyValue('--accent');
       if (currentAccent !== customGlowColor) {
         const textColor = getContrastColor(customGlowColor);
+        const rgb = hexToRgb(customGlowColor);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+        
         document.documentElement.style.setProperty('--accent', customGlowColor);
         document.documentElement.style.setProperty('--accent-text', textColor);
-        const rgb = hexToRgb(customGlowColor);
+        document.documentElement.style.setProperty('--accent-light', lightGlow);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
         console.log('🔧 Auto-restored custom glow color:', customGlowColor);
       }
