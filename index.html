@@ -1748,24 +1748,6 @@ function generateCompleteTheme(bgColor) {
   const activeGlowColor = profileGlow || customGlowColor;
   const finalAccent = activeGlowColor || accent;
   
-  // VISIBLE DEBUG PANEL
-  const existingDebug = document.getElementById('glowThemeDebug');
-  if (existingDebug) existingDebug.remove();
-  
-  const debugPanel = document.createElement('div');
-  debugPanel.id = 'glowThemeDebug';
-  debugPanel.style.cssText = 'position:fixed;bottom:20px;left:20px;background:rgba(0,0,0,0.9);color:white;padding:15px;border-radius:8px;z-index:99999;font-size:11px;max-width:300px;font-family:monospace;';
-  debugPanel.innerHTML = `
-    <div style="font-weight:bold;margin-bottom:8px;">🎨 THEME DEBUG</div>
-    <div>profileGlow: ${profileGlow || 'null'}</div>
-    <div>customGlowColor: ${customGlowColor || 'null'}</div>
-    <div>activeGlowColor: ${activeGlowColor || 'null'}</div>
-    <div>finalAccent: ${finalAccent}</div>
-    <button onclick="this.parentElement.remove()" style="margin-top:8px;padding:4px 8px;background:red;color:white;border:none;border-radius:4px;cursor:pointer;font-size:10px;">Close</button>
-  `;
-  document.body.appendChild(debugPanel);
-  setTimeout(() => debugPanel.remove(), 10000);
-  
   // Calculate lightGlow from the ACTUAL accent being used (not background)
   let lightGlow;
   if (activeGlowColor) {
@@ -3695,6 +3677,14 @@ async function viewUserProfile(userId) {
     const avatarEl = document.getElementById('profileAvatarEl');
     const usernameEl = document.getElementById('profileUsername');
     const bioEl = document.getElementById('profileBio');
+    
+    // CRITICAL: Ensure banner has height
+    if (bannerEl) {
+      bannerEl.style.height = '200px';
+      bannerEl.style.minHeight = '200px';
+      bannerEl.style.display = 'block';
+      bannerEl.style.position = 'relative';
+    }
     
     // Set banner and apply profile color theme
     // Priority: 1. Banner image 2. Profile color 3. Default
@@ -7257,6 +7247,40 @@ document.getElementById('searchInput').addEventListener('focus', function() {
 document.getElementById('searchInput').addEventListener('input', function(e) {
   const query = e.target.value;
   performSearch(query);
+});
+
+// Immediate restoration when tab becomes visible again
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    // Tab just became visible - immediately restore correct glow
+    const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
+    
+    if (onProfileScreen && savedProfileGlowColor) {
+      // On profile - restore profile glow IMMEDIATELY
+      profileCustomization.glowColor = savedProfileGlowColor;
+      
+      const textColor = getContrastColor(savedProfileGlowColor);
+      const rgb = hexToRgb(savedProfileGlowColor);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+      
+      document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
+      document.documentElement.style.setProperty('--accent-text', textColor);
+      document.documentElement.style.setProperty('--accent-light', lightGlow);
+      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+    } else if (customGlowColor) {
+      // Not on profile - restore site glow IMMEDIATELY
+      const textColor = getContrastColor(customGlowColor);
+      const rgb = hexToRgb(customGlowColor);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+      
+      document.documentElement.style.setProperty('--accent', customGlowColor);
+      document.documentElement.style.setProperty('--accent-text', textColor);
+      document.documentElement.style.setProperty('--accent-light', lightGlow);
+      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+    }
+  }
 });
 
 // FINAL OVERRIDE - Must be at end to override minified code
