@@ -3793,7 +3793,7 @@ async function viewUserProfile(userId) {
         profileColorTheme = profile.profile_color;
       }
     } else if (profile.profile_color && profile.profile_color.startsWith('#')) {
-      // They have a custom PROFILE COLOR - use it for both banner and theme
+      // They have a custom PROFILE COLOR but no banner - use profile color for banner
       console.log('🎨 Using profile color for banner:', profile.profile_color);
       profileColorTheme = profile.profile_color;
       
@@ -3801,12 +3801,18 @@ async function viewUserProfile(userId) {
       bannerEl.style.background = 'linear-gradient(135deg, ' + profile.profile_color + ', ' + bannerColorLight + ')';
       bannerEl.style.backgroundSize = '';
       bannerEl.style.backgroundPosition = '';
+      bannerEl.style.visibility = 'visible';
+      bannerEl.style.opacity = '1';
     } else {
-      // Default
-      console.log('🎨 Using default banner');
-      bannerEl.style.background = 'linear-gradient(135deg, #1a2332, #2d3e50)';
+      // No custom colors at all - use pink as default  
+      console.log('🎨 Using default pink banner');
+      const defaultPink = '#ec4899';
+      const pinkLight = adjustBrightness(defaultPink, 1.3);
+      bannerEl.style.background = 'linear-gradient(135deg, ' + defaultPink + ', ' + pinkLight + ')';
       bannerEl.style.backgroundSize = '';
       bannerEl.style.backgroundPosition = '';
+      bannerEl.style.visibility = 'visible';
+      bannerEl.style.opacity = '1';
     }
     
     // Apply the profile color theme to cards/accents
@@ -7315,11 +7321,11 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
 // Immediate restoration when tab becomes visible again
 document.addEventListener('visibilitychange', function() {
   if (!document.hidden) {
-    // Tab just became visible - immediately restore correct glow
+    // Tab just became visible - SYNCHRONOUSLY restore correct glow BEFORE anything else
     const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
     
     if (onProfileScreen && savedProfileGlowColor) {
-      // On profile - restore profile glow IMMEDIATELY
+      // On profile - forcibly set profile glow with highest priority
       profileCustomization.glowColor = savedProfileGlowColor;
       
       const textColor = getContrastColor(savedProfileGlowColor);
@@ -7327,12 +7333,19 @@ document.addEventListener('visibilitychange', function() {
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
       const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
       
+      // Set IMMEDIATELY and SYNCHRONOUSLY
       document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      
+      // Force a reflow to ensure this applies before any other code runs
+      void document.documentElement.offsetHeight;
+      
     } else if (customGlowColor) {
-      // Not on profile - restore site glow IMMEDIATELY
+      // Not on profile - restore site glow
+      profileCustomization.glowColor = null;
+      
       const textColor = getContrastColor(customGlowColor);
       const rgb = hexToRgb(customGlowColor);
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -7342,9 +7355,12 @@ document.addEventListener('visibilitychange', function() {
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      
+      // Force a reflow
+      void document.documentElement.offsetHeight;
     }
   }
-});
+}, true); // Use capture phase to run BEFORE other handlers
 
 // FINAL OVERRIDE - Must be at end to override minified code
 // This ensures siteBackgroundColor, customGlowColor, and playlists are ALWAYS restored
