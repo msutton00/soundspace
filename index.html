@@ -3856,6 +3856,17 @@ async function viewUserProfile(userId) {
       usernameAtEl.textContent = '@' + profile.username;
     }
     
+    // CRITICAL: Ensure banner content is visible
+    const bannerContent = bannerEl.querySelector('[style*="position:absolute;bottom:0"]');
+    if (bannerContent) {
+      bannerContent.style.display = 'flex';
+    }
+    
+    // Ensure username, bio, etc are visible
+    if (usernameEl) usernameEl.style.display = 'block';
+    if (bioEl) bioEl.style.display = 'block';
+    if (usernameAtEl) usernameAtEl.style.display = 'block';
+    
     // Get follower/following counts and update tabs
     const { data: followersData } = await supabase
       .from('follows')
@@ -7251,12 +7262,29 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
 // FINAL OVERRIDE - Must be at end to override minified code
 // This ensures siteBackgroundColor, customGlowColor, and playlists are ALWAYS restored
 setInterval(() => {
-  // CRITICAL: Don't run this when on profile screen - it fights with profile backgrounds!
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-  if (onProfileScreen) {
-    return; // Skip restoration when viewing profiles
+  
+  // If on profile screen, restore profile glow instead of site glow
+  if (onProfileScreen && savedProfileGlowColor) {
+    // Make sure profile glow is active
+    if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
+      profileCustomization.glowColor = savedProfileGlowColor;
+      
+      const textColor = getContrastColor(savedProfileGlowColor);
+      const rgb = hexToRgb(savedProfileGlowColor);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+      
+      document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
+      document.documentElement.style.setProperty('--accent-text', textColor);
+      document.documentElement.style.setProperty('--accent-light', lightGlow);
+      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      console.log('🔧 Auto-restored profile glow:', savedProfileGlowColor);
+    }
+    return; // Don't restore site stuff when on profile
   }
   
+  // Not on profile screen - restore site glow and background
   const savedData = localStorage.getItem('basspace_data');
   if (!savedData) return;
   
