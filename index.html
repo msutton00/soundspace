@@ -5798,20 +5798,22 @@ async function loadCloudData() {
     if (!profileError && profileData) {
       console.log('📋 Profile data loaded:', profileData);
       
-      // Update profile display
-      const usernameEl = document.querySelector('.profile-username');
-      if (usernameEl) {
-        usernameEl.textContent = '@' + profileData.username;
-      }
-      
-      const displayNameEl = document.getElementById('profileUsername');
-      if (displayNameEl && profileData.display_name) {
-        displayNameEl.textContent = profileData.display_name;
+      // Update profile display (but NOT if viewing someone else's profile)
+      if (!viewingUserId) {
+        const usernameEl = document.querySelector('.profile-username');
+        if (usernameEl) {
+          usernameEl.textContent = '@' + profileData.username;
+        }
         
-        // Also update the settings input field if it exists
-        const displayNameInput = document.getElementById('displayName');
-        if (displayNameInput) {
-          displayNameInput.value = profileData.display_name;
+        const displayNameEl = document.getElementById('profileUsername');
+        if (displayNameEl && profileData.display_name) {
+          displayNameEl.textContent = profileData.display_name;
+          
+          // Also update the settings input field if it exists
+          const displayNameInput = document.getElementById('displayName');
+          if (displayNameInput) {
+            displayNameInput.value = profileData.display_name;
+          }
         }
       }
       
