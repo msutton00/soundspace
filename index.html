@@ -293,12 +293,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .album-title{font-weight:600;font-size:.875rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 15px var(--accent)}
 .album-artist{color:var(--text-secondary);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 8px var(--accent)}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-bottom:3rem}
-.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;text-align:center;transition:all .3s;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%)}
+.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;text-align:center;transition:all .3s;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%)}
 .stat-card:hover{border-color:rgba(255,255,255,0.2);box-shadow:0 0 0 1px var(--accent),0 8px 24px rgba(0,0,0,.5),0 0 40px rgba(var(--accent-rgb, 80,144,211),0.3);transform:translateY(-6px)}
 .stat-number{font-size:3rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-1px;color:var(--text-primary);text-shadow:0 0 20px var(--accent),0 0 40px var(--accent)}
 .stat-label{color:var(--text-secondary);font-size:.875rem;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 .profile-header{position:relative;margin-bottom:2rem}
-.profile-banner{height:200px;background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.4);border-radius:0;overflow:hidden;backdrop-filter:blur(30px) saturate(100%);-webkit-backdrop-filter:blur(30px) saturate(100%);position:relative;border:1px solid rgba(255,255,255,0.08);border-left:none;border-right:none}
+.profile-banner{height:200px;background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.4);border-radius:0;overflow:hidden;backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);position:relative;border:1px solid rgba(255,255,255,0.08);border-left:none;border-right:none}
 .profile-content-wrapper{padding:0 2rem;position:relative;margin-top:-60px}
 .profile-main-info{display:flex;align-items:flex-start;gap:1.5rem}
 .profile-main-info:hover{border-color:rgba(255,255,255,0.15);box-shadow:0 12px 32px rgba(0,0,0,.4)}
@@ -309,7 +309,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .profile-username{color:var(--text-secondary);font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
 .profile-bio{color:var(--text-secondary);font-size:.9rem;line-height:1.6;max-width:600px}
 .profile-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:2rem}
-.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:all .3s;cursor:pointer;backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%);box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1)}
+.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:all .3s;cursor:pointer;backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%);box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1)}
 .stat-card:hover{border-color:rgba(255,255,255,0.2);box-shadow:0 0 0 1px var(--accent),0 8px 24px rgba(0,0,0,.5),0 0 40px rgba(var(--accent-rgb, 80,144,211),0.3);transform:translateY(-2px)}
 .stat-icon{font-size:2rem;opacity:.8}
 .stat-content{flex:1}
@@ -1629,11 +1629,8 @@ generateCompleteTheme(profileBackground);
 
 // CRITICAL: Override the minified applyProfileStyles that's messing with body background
 function applyProfileStyles() {
-  // CRITICAL: Don't apply YOUR profile styles when viewing someone else!
-  if (viewingUserId) {
-    console.log('⏭️ Skipping applyProfileStyles - viewing another user');
-    return;
-  }
+  // Don't apply when viewing someone else's profile
+  if (viewingUserId) return;
   
   console.log('✅ applyProfileStyles called (clean override - does NOT touch body background)');
   
@@ -2927,10 +2924,8 @@ function saveAccountInfo() {
 
 // Override applyProfileStyles to apply background only to profile page with frosted glass
 function applyProfileStyles() {
-  // CRITICAL: Don't apply YOUR profile styles when viewing someone else!
-  if (viewingUserId) {
-    return;
-  }
+  // Don't apply when viewing someone else's profile
+  if (viewingUserId) return;
   
   const profileAvatarEl = document.getElementById('profileAvatarEl');
   const profileBannerEl = document.getElementById('profileBannerEl');
@@ -5122,8 +5117,9 @@ window.addEventListener('DOMContentLoaded', function() {
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
 
 function initAudioAnalyzer() {
-  // Using BPM-based visualization - no Web Audio API
-  console.log('Using BPM-based visualization');
+  // DISABLED - Bass visualization disabled to keep audio working
+  // Will re-enable in future update
+  console.log('Bass visualization temporarily disabled');
 }
 
 function startBassReaction() {
@@ -5139,34 +5135,45 @@ function startBassReaction() {
   
   bassReactiveInterval = setInterval(() => {
     if (!audioPlayer.paused && currentPlayingId) {
-      // Smooth breathing effect - slow fade in and out
-      const time = Date.now() / 1000;
-      const breathCycle = 4; // 4 seconds for full breath (2s in, 2s out)
-      const phase = (time % breathCycle) / breathCycle; // 0 to 1
+      analyser.getByteFrequencyData(dataArray);
       
-      // Create smooth sine wave for breathing effect
-      const breathIntensity = (Math.sin(phase * Math.PI * 2) + 1) / 2; // 0 to 1
+      // Get bass frequencies (roughly 60-250 Hz, which is bins 0-10 for better coverage)
+      let bassSum = 0;
+      for (let i = 0; i < 10; i++) {
+        bassSum += dataArray[i];
+      }
+      const bassAverage = bassSum / 10;
       
-      // Scale intensity based on volume
-      const volumeMultiplier = audioPlayer.volume;
-      const intensity = breathIntensity * volumeMultiplier * 0.6; // Max 60% intensity
+      // Normalize bass intensity (0-255 range to 0-1)
+      const rawIntensity = bassAverage / 255;
       
-      // Create glow effect
-      const glowSize = 10 + (intensity * 10); // 10px to 20px
-      const glowIntensity = 0.3 + (intensity * 0.5); // 0.3 to 0.8 opacity
+      // Apply EXTREME exponential curve and threshold
+      // Cube it for even more dramatic response, then amplify
+      const bassIntensity = Math.pow(rawIntensity, 3) * 3; // Cube and 3x amplify
       
-      const buttonGlow = `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
-         0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.7}),
-         0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.4})`;
+      // Only show glow if intensity is above threshold (removes constant glow)
+      const threshold = 0.05;
+      const finalIntensity = bassIntensity > threshold ? bassIntensity : 0;
       
-      // Apply glow to buttons
+      // Create INTENSE, FOCUSED glow - smaller radius, higher opacity
+      const glowSize = finalIntensity * 15; // 0-15px (much smaller!)
+      const glowIntensity = finalIntensity * 2; // Boost intensity
+      
+      // Triple-layer INTENSE glow with small radius
+      const buttonGlow = glowSize > 0 
+        ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
+           0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
+           0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
+        : 'none';
+      
+      // Apply to all buttons - NO TRANSFORM
       playBtn.style.boxShadow = buttonGlow;
       if (prevBtn) prevBtn.style.boxShadow = buttonGlow;
       if (nextBtn) nextBtn.style.boxShadow = buttonGlow;
       if (repeatBtn) repeatBtn.style.boxShadow = buttonGlow;
       if (menuBtn) menuBtn.style.boxShadow = buttonGlow;
     }
-  }, 30);
+  }, 30); // Faster update (30ms) for more responsive feel
 }
 
 function stopBassReaction() {
@@ -5191,6 +5198,8 @@ function stopBassReaction() {
 
 // Hook into audio player events
 audioPlayer.addEventListener('play', () => {
+  if (!audioContext) initAudioAnalyzer();
+  if (audioContext.state === 'suspended') audioContext.resume();
   startBassReaction();
 });
 
@@ -6593,8 +6602,8 @@ async function loadFollowers(userId) {
   const followersCount = document.getElementById('followersCount');
   
   try {
-    // Get all users who follow the target user
-    const { data: followsData, error } = await supabase
+    // First get follower IDs
+    const { data: followData, error } = await supabase
       .from('follows')
       .select('follower_id')
       .eq('following_id', targetUserId);
@@ -6602,9 +6611,9 @@ async function loadFollowers(userId) {
     if (error) throw error;
     
     // Update count
-    followersCount.textContent = followsData.length + ' Follower' + (followsData.length !== 1 ? 's' : '');
+    followersCount.textContent = followData.length + ' Follower' + (followData.length !== 1 ? 's' : '');
     
-    if (!followsData || followsData.length === 0) {
+    if (!followData || followData.length === 0) {
       followersList.innerHTML = '';
       followersEmpty.style.display = 'block';
       return;
@@ -6612,27 +6621,21 @@ async function loadFollowers(userId) {
     
     followersEmpty.style.display = 'none';
     
-    // Now fetch each follower's profile data separately
+    // Now fetch each profile
     let html = '';
-    for (let i = 0; i < followsData.length; i++) {
-      const followerId = followsData[i].follower_id;
-      
-      // Fetch the profile
-      const { data: profile, error: profileError } = await supabase
+    for (let i = 0; i < followData.length; i++) {
+      const { data: profile } = await supabase
         .from('profiles')
         .select('id, username, display_name, profile_picture')
-        .eq('id', followerId)
+        .eq('id', followData[i].follower_id)
         .single();
       
-      if (profileError || !profile) {
-        console.error('Error fetching follower profile:', profileError);
-        continue;
-      }
+      if (!profile) continue;
       
       const displayName = profile.display_name || profile.username;
       const avatar = profile.profile_picture || '';
       
-      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
+      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
       html += '<div onclick="viewUserProfile(\'' + profile.id + '\')" style="cursor:pointer">';
       
       if (avatar) {
@@ -6665,8 +6668,8 @@ async function loadFollowing(userId) {
   const followingCount = document.getElementById('followingCount');
   
   try {
-    // Get all users that the target user follows
-    const { data: followsData, error } = await supabase
+    // First get following IDs
+    const { data: followData, error } = await supabase
       .from('follows')
       .select('following_id')
       .eq('follower_id', targetUserId);
@@ -6674,9 +6677,9 @@ async function loadFollowing(userId) {
     if (error) throw error;
     
     // Update count
-    followingCount.textContent = followsData.length + ' Following';
+    followingCount.textContent = followData.length + ' Following';
     
-    if (!followsData || followsData.length === 0) {
+    if (!followData || followData.length === 0) {
       followingList.innerHTML = '';
       followingEmpty.style.display = 'block';
       return;
@@ -6684,27 +6687,21 @@ async function loadFollowing(userId) {
     
     followingEmpty.style.display = 'none';
     
-    // Now fetch each following's profile data separately
+    // Now fetch each profile
     let html = '';
-    for (let i = 0; i < followsData.length; i++) {
-      const followingId = followsData[i].following_id;
-      
-      // Fetch the profile
-      const { data: profile, error: profileError } = await supabase
+    for (let i = 0; i < followData.length; i++) {
+      const { data: profile } = await supabase
         .from('profiles')
         .select('id, username, display_name, profile_picture')
-        .eq('id', followingId)
+        .eq('id', followData[i].following_id)
         .single();
       
-      if (profileError || !profile) {
-        console.error('Error fetching following profile:', profileError);
-        continue;
-      }
+      if (!profile) continue;
       
       const displayName = profile.display_name || profile.username;
       const avatar = profile.profile_picture || '';
       
-      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
+      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
       html += '<div onclick="viewUserProfile(\'' + profile.id + '\')" style="cursor:pointer">';
       
       if (avatar) {
