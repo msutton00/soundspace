@@ -5111,16 +5111,8 @@ window.addEventListener('DOMContentLoaded', function() {
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
 
 function initAudioAnalyzer() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audioPlayer);
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-    analyser.fftSize = 256;
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
-  }
+  // Using BPM-based visualization - no Web Audio API
+  console.log('Using BPM-based visualization');
 }
 
 function startBassReaction() {
@@ -5136,45 +5128,39 @@ function startBassReaction() {
   
   bassReactiveInterval = setInterval(() => {
     if (!audioPlayer.paused && currentPlayingId) {
-      analyser.getByteFrequencyData(dataArray);
+      // Simulate bass reaction using BPM
+      const time = Date.now() / 1000;
+      const bpm = 130; // Average music tempo
+      const beatInterval = 60 / bpm;
+      const beatPhase = (time % beatInterval) / beatInterval;
       
-      // Get bass frequencies (roughly 60-250 Hz, which is bins 0-10 for better coverage)
-      let bassSum = 0;
-      for (let i = 0; i < 10; i++) {
-        bassSum += dataArray[i];
-      }
-      const bassAverage = bassSum / 10;
+      // Create pulse that peaks at each beat
+      const pulse = Math.pow(Math.sin(beatPhase * Math.PI), 3);
       
-      // Normalize bass intensity (0-255 range to 0-1)
-      const rawIntensity = bassAverage / 255;
+      // Use audio volume as intensity multiplier
+      const volumeMultiplier = audioPlayer.volume;
       
-      // Apply EXTREME exponential curve and threshold
-      // Cube it for even more dramatic response, then amplify
-      const bassIntensity = Math.pow(rawIntensity, 3) * 3; // Cube and 3x amplify
+      // Create glow intensity (0-1 range)
+      const intensity = pulse * volumeMultiplier * 0.8;
       
-      // Only show glow if intensity is above threshold (removes constant glow)
-      const threshold = 0.05;
-      const finalIntensity = bassIntensity > threshold ? bassIntensity : 0;
+      // Create glow effect
+      const glowSize = intensity * 15;
+      const glowIntensity = intensity * 2;
       
-      // Create INTENSE, FOCUSED glow - smaller radius, higher opacity
-      const glowSize = finalIntensity * 15; // 0-15px (much smaller!)
-      const glowIntensity = finalIntensity * 2; // Boost intensity
-      
-      // Triple-layer INTENSE glow with small radius
-      const buttonGlow = glowSize > 0 
+      const buttonGlow = glowSize > 0.5
         ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
            0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
            0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
         : 'none';
       
-      // Apply to all buttons - NO TRANSFORM
+      // Apply glow to buttons
       playBtn.style.boxShadow = buttonGlow;
       if (prevBtn) prevBtn.style.boxShadow = buttonGlow;
       if (nextBtn) nextBtn.style.boxShadow = buttonGlow;
       if (repeatBtn) repeatBtn.style.boxShadow = buttonGlow;
       if (menuBtn) menuBtn.style.boxShadow = buttonGlow;
     }
-  }, 30); // Faster update (30ms) for more responsive feel
+  }, 30);
 }
 
 function stopBassReaction() {
@@ -5199,8 +5185,6 @@ function stopBassReaction() {
 
 // Hook into audio player events
 audioPlayer.addEventListener('play', () => {
-  if (!audioContext) initAudioAnalyzer();
-  if (audioContext.state === 'suspended') audioContext.resume();
   startBassReaction();
 });
 
