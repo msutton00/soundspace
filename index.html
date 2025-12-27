@@ -3040,6 +3040,7 @@ async function saveProfile() {
 }
 
 async function changeGlowColor(color) {
+  console.log('🎨 changeGlowColor called with:', color);
   customGlowColor = color;
   generateCompleteTheme(profileBackground);
   document.getElementById('customGlowPicker').value = color;
@@ -3047,19 +3048,27 @@ async function changeGlowColor(color) {
   // Save to database
   if (supabase && currentUser) {
     try {
-      const { error } = await supabase
+      console.log('💾 Saving glow color to database...');
+      const { data, error } = await supabase
         .from('profiles')
         .update({ glow_color: color })
-        .eq('id', currentUser.id);
+        .eq('id', currentUser.id)
+        .select();
       
       if (error) {
-        console.error('Error saving glow color:', error);
+        console.error('❌ Error saving glow color:', error);
+        alert('Error saving glow color: ' + error.message);
       } else {
-        console.log('✨ Glow color saved to database:', color);
+        console.log('✅ Glow color saved to database:', data);
+        alert('Custom glow color saved!');
       }
     } catch (err) {
-      console.error('Exception saving glow color:', err);
+      console.error('❌ Exception saving glow color:', err);
+      alert('Exception: ' + err.message);
     }
+  } else {
+    console.warn('⚠️ Cannot save - supabase or currentUser missing');
+    alert('Not logged in or database not available');
   }
   
   saveData(); // Also save to localStorage for backup
