@@ -5934,6 +5934,20 @@ async function loadCloudData() {
       console.log('🔍 profileData.glow_color =', profileData.glow_color);
       console.log('🔍 Full profileData keys:', Object.keys(profileData));
       
+      // CREATE VISIBLE DEBUG PANEL
+      const debugPanel = document.createElement('div');
+      debugPanel.id = 'glowDebugPanel';
+      debugPanel.style.cssText = 'position:fixed;top:80px;right:20px;background:rgba(0,0,0,0.9);color:white;padding:20px;border-radius:8px;z-index:99999;font-size:12px;max-width:300px;font-family:monospace;';
+      debugPanel.innerHTML = `
+        <div style="font-weight:bold;margin-bottom:10px;">🔍 GLOW COLOR DEBUG</div>
+        <div>Database has glow_color: ${profileData.glow_color ? 'YES ✅' : 'NO ❌'}</div>
+        <div>Value from DB: ${profileData.glow_color || 'null'}</div>
+        <div>All DB fields: ${Object.keys(profileData).join(', ')}</div>
+        <button onclick="this.parentElement.remove()" style="margin-top:10px;padding:5px 10px;background:red;color:white;border:none;border-radius:4px;cursor:pointer;">Close</button>
+      `;
+      document.body.appendChild(debugPanel);
+      setTimeout(() => debugPanel.remove(), 15000); // Auto-remove after 15 seconds
+      
       if (profileData.glow_color) {
         console.log('✨ Loading custom glow color:', profileData.glow_color);
         customGlowColor = profileData.glow_color;
