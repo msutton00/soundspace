@@ -5930,17 +5930,27 @@ async function loadCloudData() {
       console.log('Profile picture from DB:', profileData.profile_picture);
       
       // CRITICAL: Load custom glow color FIRST, before generateCompleteTheme is called
+      console.log('🔍 Checking for glow_color in profileData...');
+      console.log('🔍 profileData.glow_color =', profileData.glow_color);
+      console.log('🔍 Full profileData keys:', Object.keys(profileData));
+      
       if (profileData.glow_color) {
         console.log('✨ Loading custom glow color:', profileData.glow_color);
         customGlowColor = profileData.glow_color;
         
         // Update the color picker if it exists
         const glowPicker = document.getElementById('customGlowPicker');
-        if (glowPicker) glowPicker.value = profileData.glow_color;
+        if (glowPicker) {
+          glowPicker.value = profileData.glow_color;
+          console.log('✅ Updated glow picker value to:', profileData.glow_color);
+        } else {
+          console.log('⚠️ Glow picker element not found');
+        }
         
         console.log('✅ Custom glow color loaded and set BEFORE theme generation');
+        console.log('✅ customGlowColor global variable is now:', customGlowColor);
       } else {
-        console.log('⚠️ No glow color in database, using auto');
+        console.log('⚠️ No glow color in database (profileData.glow_color is', profileData.glow_color, ')');
         customGlowColor = null;
       }
       
