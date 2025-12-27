@@ -5111,10 +5111,28 @@ window.addEventListener('DOMContentLoaded', function() {
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
 
 function initAudioAnalyzer() {
-  // Using simple volume-based visualization instead of Web Audio API
-  // This avoids breaking audio output
-  console.log('Using volume-based visualization');
+  if (audioContext) return; // Already initialized
+  
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+    
+    // CRITICAL: Create source connection ONCE, on page load
+    const source = audioContext.createMediaElementSource(audioPlayer);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+    
+    console.log('✅ Audio analyzer initialized - connected to audio element');
+  } catch (error) {
+    console.error('Failed to initialize audio analyzer:', error);
+  }
 }
+
+// Initialize immediately on page load (before any audio plays)
+initAudioAnalyzer();
 
 function startBassReaction() {
   const playBtn = document.getElementById('playPauseBtn');
@@ -5132,31 +5150,34 @@ function startBassReaction() {
   
   if (bassReactiveInterval) clearInterval(bassReactiveInterval);
   
-  let lastVolume = 0;
+  // Resume audio context if suspended (browser autoplay policy)
+  if (audioContext && audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
   
   bassReactiveInterval = setInterval(() => {
-    if (!audioPlayer.paused && currentPlayingId) {
-      // Simulate bass reaction using volume and time
-      // Create pulsing effect that syncs with typical music tempo (120-140 BPM)
-      const time = Date.now() / 1000;
-      const bpm = 130; // Average music tempo
-      const beatInterval = 60 / bpm;
-      const beatPhase = (time % beatInterval) / beatInterval;
+    if (!audioPlayer.paused && currentPlayingId && analyser && dataArray) {
+      // Get frequency data from actual audio
+      analyser.getByteFrequencyData(dataArray);
       
-      // Create pulse that peaks at each beat
-      const pulse = Math.pow(Math.sin(beatPhase * Math.PI), 3);
+      // Get bass frequencies (bins 0-10 cover roughly 0-250Hz which is bass range)
+      let bassSum = 0;
+      for (let i = 0; i < 10; i++) {
+        bassSum += dataArray[i];
+      }
+      const bassAverage = bassSum / 10;
       
-      // Use audio volume as intensity multiplier
-      const volumeMultiplier = audioPlayer.volume;
+      // Normalize to 0-1 range
+      const rawIntensity = bassAverage / 255;
       
-      // Create glow intensity (0-1 range)
-      const intensity = pulse * volumeMultiplier * 0.8;
+      // Apply exponential curve for more dramatic response to bass hits
+      const bassIntensity = Math.pow(rawIntensity, 2) * 2;
       
       // Create glow effect
-      const glowSize = intensity * 15;
-      const glowIntensity = intensity * 2;
+      const glowSize = bassIntensity * 20;
+      const glowIntensity = bassIntensity * 2;
       
-      const buttonGlow = glowSize > 0.5
+      const buttonGlow = glowSize > 1
         ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
            0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
            0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
