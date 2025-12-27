@@ -5128,30 +5128,25 @@ function startBassReaction() {
   
   bassReactiveInterval = setInterval(() => {
     if (!audioPlayer.paused && currentPlayingId) {
-      // Simulate bass reaction using BPM
+      // Smooth breathing effect - slow fade in and out
       const time = Date.now() / 1000;
-      const bpm = 130; // Average music tempo
-      const beatInterval = 60 / bpm;
-      const beatPhase = (time % beatInterval) / beatInterval;
+      const breathCycle = 4; // 4 seconds for full breath (2s in, 2s out)
+      const phase = (time % breathCycle) / breathCycle; // 0 to 1
       
-      // Create pulse that peaks at each beat
-      const pulse = Math.pow(Math.sin(beatPhase * Math.PI), 3);
+      // Create smooth sine wave for breathing effect
+      const breathIntensity = (Math.sin(phase * Math.PI * 2) + 1) / 2; // 0 to 1
       
-      // Use audio volume as intensity multiplier
+      // Scale intensity based on volume
       const volumeMultiplier = audioPlayer.volume;
-      
-      // Create glow intensity (0-1 range)
-      const intensity = pulse * volumeMultiplier * 0.8;
+      const intensity = breathIntensity * volumeMultiplier * 0.6; // Max 60% intensity
       
       // Create glow effect
-      const glowSize = intensity * 15;
-      const glowIntensity = intensity * 2;
+      const glowSize = 10 + (intensity * 10); // 10px to 20px
+      const glowIntensity = 0.3 + (intensity * 0.5); // 0.3 to 0.8 opacity
       
-      const buttonGlow = glowSize > 0.5
-        ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
-           0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
-           0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
-        : 'none';
+      const buttonGlow = `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
+         0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.7}),
+         0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.4})`;
       
       // Apply glow to buttons
       playBtn.style.boxShadow = buttonGlow;
