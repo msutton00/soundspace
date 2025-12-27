@@ -4944,16 +4944,6 @@ async function togglePlay(trackId) {
         networkState: audioPlayer.networkState
       });
       
-      // Initialize audio analyzer for bass visualization
-      if (!audioContext) {
-        initAudioAnalyzer();
-      }
-      
-      // Resume audio context if suspended (required by browsers)
-      if (audioContext && audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-      
       // Add event listeners to debug
       // Set audio source
       audioPlayer.src = audioUrl;
@@ -5119,25 +5109,11 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Bass-reactive player bar glow
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
-var audioSourceNode = null; // Track if we already created the source
 
 function initAudioAnalyzer() {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
-  }
-  
-  // CRITICAL: Only create MediaElementSource ONCE
-  // Creating it multiple times breaks audio output
-  if (!audioSourceNode) {
-    audioSourceNode = audioContext.createMediaElementSource(audioPlayer);
-    audioSourceNode.connect(analyser);
-    analyser.connect(audioContext.destination);
-    console.log('✅ Audio routing: audioPlayer → analyser → speakers');
-  }
+  // DISABLED - Bass visualization disabled to keep audio working
+  // Will re-enable in future update
+  console.log('Bass visualization temporarily disabled');
 }
 
 function startBassReaction() {
