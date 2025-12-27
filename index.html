@@ -5109,42 +5109,19 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Bass-reactive player bar glow
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
-var audioSourceCreated = false;
 
 function initAudioAnalyzer() {
-  if (audioSourceCreated) return; // Already done
-  
-  try {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      bufferLength = analyser.frequencyBinCount;
-      dataArray = new Uint8Array(bufferLength);
-    }
-    
-    // CRITICAL: Only create source ONCE
-    if (!audioSourceCreated) {
-      const source = audioContext.createMediaElementSource(audioPlayer);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      audioSourceCreated = true;
-      console.log('✅ Audio analyzer initialized');
-    }
-  } catch (error) {
-    console.error('Audio analyzer error:', error);
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaElementSource(audioPlayer);
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+    analyser.fftSize = 256;
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
   }
 }
-
-// Initialize when DOM is ready AND user first interacts
-document.addEventListener('DOMContentLoaded', function() {
-  // Wait for first user click to initialize (required by browser autoplay policies)
-  document.addEventListener('click', function() {
-    if (!audioSourceCreated) {
-      initAudioAnalyzer();
-    }
-  }, { once: true });
-});
 
 function startBassReaction() {
   const playBtn = document.getElementById('playPauseBtn');
@@ -5153,56 +5130,51 @@ function startBassReaction() {
   const repeatBtn = document.getElementById('repeatBtn');
   const menuBtn = document.getElementById('playerMenuBtn');
   
-  console.log('🎵 Starting bass reaction visualization');
-  
-  if (!playBtn) {
-    console.warn('Play button not found');
-    return;
-  }
+  if (!playBtn) return;
   
   if (bassReactiveInterval) clearInterval(bassReactiveInterval);
   
-  // Resume audio context if suspended (browser autoplay policy)
-  if (audioContext && audioContext.state === 'suspended') {
-    audioContext.resume();
-  }
-  
   bassReactiveInterval = setInterval(() => {
-    if (!audioPlayer.paused && currentPlayingId && analyser && dataArray) {
-      // Get frequency data from actual audio
+    if (!audioPlayer.paused && currentPlayingId) {
       analyser.getByteFrequencyData(dataArray);
       
-      // Get bass frequencies (bins 0-10 cover roughly 0-250Hz which is bass range)
+      // Get bass frequencies (roughly 60-250 Hz, which is bins 0-10 for better coverage)
       let bassSum = 0;
       for (let i = 0; i < 10; i++) {
         bassSum += dataArray[i];
       }
       const bassAverage = bassSum / 10;
       
-      // Normalize to 0-1 range
+      // Normalize bass intensity (0-255 range to 0-1)
       const rawIntensity = bassAverage / 255;
       
-      // Apply exponential curve for more dramatic response to bass hits
-      const bassIntensity = Math.pow(rawIntensity, 2) * 2;
+      // Apply EXTREME exponential curve and threshold
+      // Cube it for even more dramatic response, then amplify
+      const bassIntensity = Math.pow(rawIntensity, 3) * 3; // Cube and 3x amplify
       
-      // Create glow effect
-      const glowSize = bassIntensity * 20;
-      const glowIntensity = bassIntensity * 2;
+      // Only show glow if intensity is above threshold (removes constant glow)
+      const threshold = 0.05;
+      const finalIntensity = bassIntensity > threshold ? bassIntensity : 0;
       
-      const buttonGlow = glowSize > 1
+      // Create INTENSE, FOCUSED glow - smaller radius, higher opacity
+      const glowSize = finalIntensity * 15; // 0-15px (much smaller!)
+      const glowIntensity = finalIntensity * 2; // Boost intensity
+      
+      // Triple-layer INTENSE glow with small radius
+      const buttonGlow = glowSize > 0 
         ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
            0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
            0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
         : 'none';
       
-      // Apply glow to buttons
+      // Apply to all buttons - NO TRANSFORM
       playBtn.style.boxShadow = buttonGlow;
       if (prevBtn) prevBtn.style.boxShadow = buttonGlow;
       if (nextBtn) nextBtn.style.boxShadow = buttonGlow;
       if (repeatBtn) repeatBtn.style.boxShadow = buttonGlow;
       if (menuBtn) menuBtn.style.boxShadow = buttonGlow;
     }
-  }, 30);
+  }, 30); // Faster update (30ms) for more responsive feel
 }
 
 function stopBassReaction() {
@@ -5227,6 +5199,8 @@ function stopBassReaction() {
 
 // Hook into audio player events
 audioPlayer.addEventListener('play', () => {
+  if (!audioContext) initAudioAnalyzer();
+  if (audioContext.state === 'suspended') audioContext.resume();
   startBassReaction();
 });
 
