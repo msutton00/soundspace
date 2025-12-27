@@ -1629,6 +1629,12 @@ generateCompleteTheme(profileBackground);
 
 // CRITICAL: Override the minified applyProfileStyles that's messing with body background
 function applyProfileStyles() {
+  // CRITICAL: Don't apply YOUR profile when viewing someone else's profile
+  if (viewingUserId) {
+    console.log('⏭️ Skipping applyProfileStyles - viewing user:', viewingUserId);
+    return;
+  }
+  
   console.log('✅ applyProfileStyles called (clean override - does NOT touch body background)');
   
   const profileAvatarEl = document.getElementById('profileAvatarEl');
@@ -2928,6 +2934,11 @@ function saveAccountInfo() {
 
 // Override applyProfileStyles to apply background only to profile page with frosted glass
 function applyProfileStyles() {
+  // CRITICAL: Don't apply YOUR profile when viewing someone else's profile
+  if (viewingUserId) {
+    return;
+  }
+  
   const profileAvatarEl = document.getElementById('profileAvatarEl');
   const profileBannerEl = document.getElementById('profileBannerEl');
   const profileScreen = document.getElementById('profileScreen');
