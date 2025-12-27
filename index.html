@@ -4920,11 +4920,6 @@ async function togglePlay(trackId) {
       // OPTIMIZED: Set preload to 'auto' for faster loading
       audioPlayer.preload = 'auto';
       
-      // Initialize audio analyzer for bass visualization (only once)
-      if (!audioContext) {
-        initAudioAnalyzer();
-      }
-      
       // Set audio source
       audioPlayer.src = audioUrl;
       
@@ -5114,36 +5109,11 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Bass-reactive player bar glow
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
-var audioSourceConnected = false; // Track if we've connected the source
 
 function initAudioAnalyzer() {
-  // Create audio context and analyser
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
-  }
-  
-  // CRITICAL FIX: Only connect source ONCE
-  // Calling createMediaElementSource multiple times breaks audio
-  if (!audioSourceConnected) {
-    try {
-      const source = audioContext.createMediaElementSource(audioPlayer);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-      audioSourceConnected = true;
-      console.log('✅ Audio routing connected: audioPlayer → analyser → speakers');
-    } catch (e) {
-      console.error('Failed to connect audio source:', e);
-    }
-  }
-  
-  // Resume context if suspended
-  if (audioContext.state === 'suspended') {
-    audioContext.resume();
-  }
+  // Using simple volume-based visualization instead of Web Audio API
+  // This avoids breaking audio output
+  console.log('Using volume-based visualization');
 }
 
 function startBassReaction() {
@@ -5157,47 +5127,44 @@ function startBassReaction() {
   
   if (bassReactiveInterval) clearInterval(bassReactiveInterval);
   
+  let lastVolume = 0;
+  
   bassReactiveInterval = setInterval(() => {
     if (!audioPlayer.paused && currentPlayingId) {
-      analyser.getByteFrequencyData(dataArray);
+      // Simulate bass reaction using volume and time
+      // Create pulsing effect that syncs with typical music tempo (120-140 BPM)
+      const time = Date.now() / 1000;
+      const bpm = 130; // Average music tempo
+      const beatInterval = 60 / bpm;
+      const beatPhase = (time % beatInterval) / beatInterval;
       
-      // Get bass frequencies (roughly 60-250 Hz, which is bins 0-10 for better coverage)
-      let bassSum = 0;
-      for (let i = 0; i < 10; i++) {
-        bassSum += dataArray[i];
-      }
-      const bassAverage = bassSum / 10;
+      // Create pulse that peaks at each beat
+      const pulse = Math.pow(Math.sin(beatPhase * Math.PI), 3);
       
-      // Normalize bass intensity (0-255 range to 0-1)
-      const rawIntensity = bassAverage / 255;
+      // Use audio volume as intensity multiplier
+      const volumeMultiplier = audioPlayer.volume;
       
-      // Apply EXTREME exponential curve and threshold
-      // Cube it for even more dramatic response, then amplify
-      const bassIntensity = Math.pow(rawIntensity, 3) * 3; // Cube and 3x amplify
+      // Create glow intensity (0-1 range)
+      const intensity = pulse * volumeMultiplier * 0.8;
       
-      // Only show glow if intensity is above threshold (removes constant glow)
-      const threshold = 0.05;
-      const finalIntensity = bassIntensity > threshold ? bassIntensity : 0;
+      // Create glow effect
+      const glowSize = intensity * 15;
+      const glowIntensity = intensity * 2;
       
-      // Create INTENSE, FOCUSED glow - smaller radius, higher opacity
-      const glowSize = finalIntensity * 15; // 0-15px (much smaller!)
-      const glowIntensity = finalIntensity * 2; // Boost intensity
-      
-      // Triple-layer INTENSE glow with small radius
-      const buttonGlow = glowSize > 0 
+      const buttonGlow = glowSize > 0.5
         ? `0 0 ${glowSize}px rgba(var(--accent-rgb), ${glowIntensity}), 
            0 0 ${glowSize * 1.5}px rgba(var(--accent-rgb), ${glowIntensity * 0.8}),
            0 0 ${glowSize * 2}px rgba(var(--accent-rgb), ${glowIntensity * 0.5})`
         : 'none';
       
-      // Apply to all buttons - NO TRANSFORM
+      // Apply glow to buttons
       playBtn.style.boxShadow = buttonGlow;
       if (prevBtn) prevBtn.style.boxShadow = buttonGlow;
       if (nextBtn) nextBtn.style.boxShadow = buttonGlow;
       if (repeatBtn) repeatBtn.style.boxShadow = buttonGlow;
       if (menuBtn) menuBtn.style.boxShadow = buttonGlow;
     }
-  }, 30); // Faster update (30ms) for more responsive feel
+  }, 30);
 }
 
 function stopBassReaction() {
