@@ -298,7 +298,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .stat-number{font-size:3rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-1px;color:var(--text-primary);text-shadow:0 0 20px var(--accent),0 0 40px var(--accent)}
 .stat-label{color:var(--text-secondary);font-size:.875rem;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 .profile-header{position:relative;margin-bottom:2rem}
-.profile-banner{height:200px;border-radius:0;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.08);border-left:none;border-right:none}
+.profile-banner{height:200px;border-radius:0;overflow:hidden;backdrop-filter:blur(30px) saturate(100%);-webkit-backdrop-filter:blur(30px) saturate(100%);position:relative;border:1px solid rgba(255,255,255,0.08);border-left:none;border-right:none}
 .profile-content-wrapper{padding:0 2rem;position:relative;margin-top:-60px}
 .profile-main-info{display:flex;align-items:flex-start;gap:1.5rem}
 .profile-main-info:hover{border-color:rgba(255,255,255,0.15);box-shadow:0 12px 32px rgba(0,0,0,.4)}
@@ -1652,11 +1652,17 @@ function applyProfileStyles() {
     profileBannerEl.style.background = profileBanner;
     profileBannerEl.style.backgroundSize = 'cover';
     profileBannerEl.style.backgroundPosition = 'center';
+    // Remove backdrop filter when image is uploaded
+    profileBannerEl.style.backdropFilter = 'none';
+    profileBannerEl.style.webkitBackdropFilter = 'none';
   } else {
     profileBannerEl.style.background = 'transparent';
     profileBannerEl.style.backgroundImage = 'none';
     profileBannerEl.style.backgroundSize = '';
     profileBannerEl.style.backgroundPosition = '';
+    // Keep backdrop filter when no image (foggy effect)
+    profileBannerEl.style.backdropFilter = '';
+    profileBannerEl.style.webkitBackdropFilter = '';
   }
   
   // DO NOT TOUCH BODY BACKGROUND - it's managed by showScreen() for profiles
@@ -2943,12 +2949,18 @@ function applyProfileStyles() {
     profileBannerEl.style.background = profileBanner;
     profileBannerEl.style.backgroundSize = 'cover';
     profileBannerEl.style.backgroundPosition = 'center';
+    // Remove backdrop filter when image is uploaded
+    profileBannerEl.style.backdropFilter = 'none';
+    profileBannerEl.style.webkitBackdropFilter = 'none';
   } else {
-    // No image - clear ALL background styles
+    // No image - clear ALL background styles but keep foggy
     profileBannerEl.style.background = 'transparent';
     profileBannerEl.style.backgroundImage = 'none';
     profileBannerEl.style.backgroundSize = '';
     profileBannerEl.style.backgroundPosition = '';
+    // Keep backdrop filter when no image (foggy effect)
+    profileBannerEl.style.backdropFilter = '';
+    profileBannerEl.style.webkitBackdropFilter = '';
   }
   
   // CRITICAL: DO NOT TOUCH document.body.style.background!
