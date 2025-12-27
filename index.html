@@ -3040,6 +3040,13 @@ async function saveProfile() {
 
 async function changeGlowColor(color) {
   console.log('🎨 changeGlowColor called with:', color);
+  
+  // Show immediate "Saving..." feedback
+  const startDiv = document.createElement('div');
+  startDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:blue;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
+  startDiv.textContent = '⏳ Saving glow color: ' + color;
+  document.body.appendChild(startDiv);
+  
   customGlowColor = color;
   generateCompleteTheme(profileBackground);
   document.getElementById('customGlowPicker').value = color;
@@ -3057,13 +3064,15 @@ async function changeGlowColor(color) {
         })
         .eq('id', currentUser.id);
       
+      startDiv.remove(); // Remove "Saving..." message
+      
       if (error) {
         console.error('❌ DATABASE ERROR:', error);
         const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-        errorDiv.textContent = 'ERROR SAVING GLOW: ' + error.message;
+        errorDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;max-width:400px;';
+        errorDiv.innerHTML = '<strong>❌ ERROR SAVING GLOW:</strong><br>' + error.message + '<br><br>Error code: ' + (error.code || 'unknown');
         document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 5000);
+        setTimeout(() => errorDiv.remove(), 10000);
       } else {
         console.log('✅ SAVED TO DATABASE');
         
@@ -3079,9 +3088,9 @@ async function changeGlowColor(color) {
           
           const successDiv = document.createElement('div');
           successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-          successDiv.innerHTML = '✅ Glow color saved!<br>Verified: ' + verifyData.glow_color;
+          successDiv.innerHTML = '✅ Glow color saved!<br>Value: ' + verifyData.glow_color + '<br><br><strong>Reload page to test persistence</strong>';
           document.body.appendChild(successDiv);
-          setTimeout(() => successDiv.remove(), 3000);
+          setTimeout(() => successDiv.remove(), 8000);
         } else {
           console.error('⚠️ Save succeeded but verification failed');
           const warnDiv = document.createElement('div');
