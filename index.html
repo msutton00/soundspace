@@ -1287,13 +1287,13 @@ textarea.input{resize:vertical;font-family:'Inter',sans-serif}
 </div>
 </div>
 
-<!-- Glow Color -->
+<!-- Profile Glow Color (separate from site-wide) -->
 <div class="input-group" id="glowColorSection">
-<label>Glow Color</label>
+<label>Profile Glow Color</label>
 <input type="color" id="glowColorPicker" class="color-picker-input" value="">
-<button class="btn" onclick="setGlowColor()" style="margin-top:0.5rem">Apply Glow Color</button>
-<button class="btn btn-secondary" onclick="resetGlowColor()" style="margin-top:0.5rem">Reset to Auto</button>
-<p style="color:var(--text-secondary);font-size:.85rem;margin-top:0.5rem">Leave empty for automatic color based on theme</p>
+<button class="btn" onclick="setProfileGlowColor()" style="margin-top:0.5rem">Apply Glow Color</button>
+<button class="btn btn-secondary" onclick="resetProfileGlowColor()" style="margin-top:0.5rem">Reset to Auto</button>
+<p style="color:var(--text-secondary);font-size:.85rem;margin-top:0.5rem">Leave empty for automatic color. This is separate from site-wide glow.</p>
 </div>
 
 <!-- Text Color -->
@@ -2357,7 +2357,7 @@ let profileCustomization = {
   panelStyle: 'glass', // 'glass' or 'solid'
   panelColor: '#0a0d1a',
   glowEnabled: true,
-  glowColor: null,
+  glowColor: null, // Separate from site-wide customGlowColor
   textColor: 'light', // 'light', 'dark', or 'custom'
   customTextColor: '#ffffff',
   accentColor: null
@@ -2576,20 +2576,56 @@ function togglePanelGlow() {
   applyProfileCustomization();
 }
 
-function setGlowColor() {
+// Profile-specific glow color (only affects profile page)
+async function setProfileGlowColor() {
   const color = document.getElementById('glowColorPicker').value;
   profileCustomization.glowColor = color;
-  customGlowColor = color;
-  generateCompleteTheme(profileBackground);
+  
+  // Apply ONLY to profile page (don't touch site-wide customGlowColor)
+  const profileScreen = document.getElementById('profileScreen');
+  if (profileScreen && profileScreen.classList.contains('active')) {
+    // Temporarily override accent for profile page
+    document.documentElement.style.setProperty('--accent', color);
+    const rgb = hexToRgb(color);
+    document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+  }
+  
   applyProfileCustomization();
+  
+  // Save to database as profile_glow_color (separate field)
+  if (supabase && currentUser) {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ profile_glow_color: color })
+        .eq('id', currentUser.id);
+    } catch (err) {
+      console.error('Error saving profile glow color:', err);
+    }
+  }
 }
 
-function resetGlowColor() {
+async function resetProfileGlowColor() {
   profileCustomization.glowColor = null;
-  customGlowColor = null;
   document.getElementById('glowColorPicker').value = '';
-  generateCompleteTheme(profileBackground);
+  
+  // Restore site-wide glow when on profile
+  const currentBg = profileBackground || currentSiteBackgroundColor || '#050d1a';
+  generateCompleteTheme(currentBg);
+  
   applyProfileCustomization();
+  
+  // Save to database
+  if (supabase && currentUser) {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ profile_glow_color: null })
+        .eq('id', currentUser.id);
+    } catch (err) {
+      console.error('Error resetting profile glow color:', err);
+    }
+  }
 }
 
 function setTextColor(type) {
@@ -4197,6 +4233,13 @@ function showScreen(screenName) {
       document.body.style.backgroundColor = currentSiteBackgroundColor;
       generateCompleteTheme(currentSiteBackgroundColor);
     }
+    
+    // RESTORE SITE-WIDE GLOW (not profile glow)
+    if (customGlowColor) {
+      document.documentElement.style.setProperty('--accent', customGlowColor);
+      const rgb = hexToRgb(customGlowColor);
+      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+    }
   }
   
   // Only restore global customization if we're currently on a playlist AND leaving it
@@ -4332,6 +4375,14 @@ function showScreen(screenName) {
       renderProfile();
       applyProfileStyles();
       startProfileSong();
+      
+      // APPLY PROFILE-SPECIFIC GLOW (if set)
+      if (profileCustomization.glowColor) {
+        console.log('✨ Applying profile glow color:', profileCustomization.glowColor);
+        document.documentElement.style.setProperty('--accent', profileCustomization.glowColor);
+        const rgb = hexToRgb(profileCustomization.glowColor);
+        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      }
     } else if (screenName === 'settings') {
       // Load current display name and bio from profile
       const displayNameInput = document.getElementById('displayName');
@@ -5901,6 +5952,19 @@ async function loadCloudData() {
         }
       } else {
         customGlowColor = null;
+      }
+      
+      // Load profile-specific glow color from database (separate from site glow)
+      if (profileData.profile_glow_color) {
+        profileCustomization.glowColor = profileData.profile_glow_color;
+        
+        // Update the profile glow picker if it exists
+        const profileGlowPicker = document.getElementById('glowColorPicker');
+        if (profileGlowPicker) {
+          profileGlowPicker.value = profileData.profile_glow_color;
+        }
+      } else {
+        profileCustomization.glowColor = null;
       }
       
       // Load background color from database (SITE background, not profile)
