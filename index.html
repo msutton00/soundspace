@@ -5109,30 +5109,42 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Bass-reactive player bar glow
 var audioContext, analyser, dataArray, bufferLength, bassReactiveInterval;
+var audioSourceCreated = false;
 
 function initAudioAnalyzer() {
-  if (audioContext) return; // Already initialized
+  if (audioSourceCreated) return; // Already done
   
   try {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    bufferLength = analyser.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+    }
     
-    // CRITICAL: Create source connection ONCE, on page load
-    const source = audioContext.createMediaElementSource(audioPlayer);
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-    
-    console.log('✅ Audio analyzer initialized - connected to audio element');
+    // CRITICAL: Only create source ONCE
+    if (!audioSourceCreated) {
+      const source = audioContext.createMediaElementSource(audioPlayer);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+      audioSourceCreated = true;
+      console.log('✅ Audio analyzer initialized');
+    }
   } catch (error) {
-    console.error('Failed to initialize audio analyzer:', error);
+    console.error('Audio analyzer error:', error);
   }
 }
 
-// Initialize immediately on page load (before any audio plays)
-initAudioAnalyzer();
+// Initialize when DOM is ready AND user first interacts
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for first user click to initialize (required by browser autoplay policies)
+  document.addEventListener('click', function() {
+    if (!audioSourceCreated) {
+      initAudioAnalyzer();
+    }
+  }, { once: true });
+});
 
 function startBassReaction() {
   const playBtn = document.getElementById('playPauseBtn');
