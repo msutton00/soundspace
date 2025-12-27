@@ -293,12 +293,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .album-title{font-weight:600;font-size:.875rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 15px var(--accent)}
 .album-artist{color:var(--text-secondary);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 8px var(--accent)}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-bottom:3rem}
-.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;text-align:center;transition:all .3s;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%)}
+.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:2rem;text-align:center;transition:all .3s;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%)}
 .stat-card:hover{border-color:rgba(255,255,255,0.2);box-shadow:0 0 0 1px var(--accent),0 8px 24px rgba(0,0,0,.5),0 0 40px rgba(var(--accent-rgb, 80,144,211),0.3);transform:translateY(-6px)}
 .stat-number{font-size:3rem;font-weight:800;margin-bottom:.5rem;letter-spacing:-1px;color:var(--text-primary);text-shadow:0 0 20px var(--accent),0 0 40px var(--accent)}
 .stat-label{color:var(--text-secondary);font-size:.875rem;text-transform:uppercase;letter-spacing:1px;font-weight:600;text-shadow:0 0 3px rgba(var(--accent-rgb, 80,144,211),0.3)}
 .profile-header{position:relative;margin-bottom:2rem}
-.profile-banner{height:200px;background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.4);border-radius:0;overflow:hidden;backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);position:relative;border:1px solid rgba(255,255,255,0.08);border-left:none;border-right:none}
+.profile-banner{height:200px;background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.4);border-radius:0;overflow:hidden;backdrop-filter:blur(30px) saturate(100%);-webkit-backdrop-filter:blur(30px) saturate(100%);position:relative;border:1px solid rgba(255,255,255,0.08);border-left:none;border-right:none}
 .profile-content-wrapper{padding:0 2rem;position:relative;margin-top:-60px}
 .profile-main-info{display:flex;align-items:flex-start;gap:1.5rem}
 .profile-main-info:hover{border-color:rgba(255,255,255,0.15);box-shadow:0 12px 32px rgba(0,0,0,.4)}
@@ -309,7 +309,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .profile-username{color:var(--text-secondary);font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
 .profile-bio{color:var(--text-secondary);font-size:.9rem;line-height:1.6;max-width:600px}
 .profile-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:2rem}
-.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:all .3s;cursor:pointer;backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%);box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1)}
+.stat-card{background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:all .3s;cursor:pointer;backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%);box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 1px rgba(255,255,255,0.1)}
 .stat-card:hover{border-color:rgba(255,255,255,0.2);box-shadow:0 0 0 1px var(--accent),0 8px 24px rgba(0,0,0,.5),0 0 40px rgba(var(--accent-rgb, 80,144,211),0.3);transform:translateY(-2px)}
 .stat-icon{font-size:2rem;opacity:.8}
 .stat-content{flex:1}
@@ -1629,6 +1629,12 @@ generateCompleteTheme(profileBackground);
 
 // CRITICAL: Override the minified applyProfileStyles that's messing with body background
 function applyProfileStyles() {
+  // CRITICAL: Don't apply YOUR profile styles when viewing someone else!
+  if (viewingUserId) {
+    console.log('⏭️ Skipping applyProfileStyles - viewing another user');
+    return;
+  }
+  
   console.log('✅ applyProfileStyles called (clean override - does NOT touch body background)');
   
   const profileAvatarEl = document.getElementById('profileAvatarEl');
@@ -6590,9 +6596,6 @@ async function loadFollowers(userId) {
     
     if (error) throw error;
     
-    // TEMP DEBUG: Show what we got
-    alert('Followers query result:\nCount: ' + data.length + '\nFirst follower: ' + (data[0] ? JSON.stringify(data[0].profiles) : 'none'));
-    
     // Update count
     followersCount.textContent = data.length + ' Follower' + (data.length !== 1 ? 's' : '');
     
@@ -6604,10 +6607,39 @@ async function loadFollowers(userId) {
     
     followersEmpty.style.display = 'none';
     
-    // Render followers
+    // Render followers - handle case where profile might be null
     let html = '';
     for (let i = 0; i < data.length; i++) {
       const follower = data[i].profiles;
+      
+      // If profile is null, fetch it manually
+      if (!follower && data[i].follower_id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, username, display_name, profile_picture')
+          .eq('id', data[i].follower_id)
+          .single();
+        
+        if (profileData) {
+          const displayName = profileData.display_name || profileData.username;
+          const avatar = profileData.profile_picture || '';
+          
+          html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.85);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
+          html += '<div onclick="viewUserProfile(\'' + profileData.id + '\')" style="cursor:pointer">';
+          
+          if (avatar) {
+            html += '<div style="width:80px;height:80px;margin:0 auto 1rem;border-radius:50%;background:url(\'' + avatar + '\');background-size:cover;background-position:center"></div>';
+          } else {
+            html += '<div style="width:80px;height:80px;margin:0 auto 1rem;border-radius:50%;background:linear-gradient(135deg, var(--accent), var(--accent-light));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700">' + displayName.substring(0,2).toUpperCase() + '</div>';
+          }
+          
+          html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">' + displayName + '</h3>';
+          html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + profileData.username + '</p>';
+          html += '</div></div>';
+        }
+        continue;
+      }
+      
       if (!follower) continue;
       
       const displayName = follower.display_name || follower.username;
