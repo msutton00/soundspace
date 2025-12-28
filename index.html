@@ -1774,18 +1774,19 @@ function generateCompleteTheme(bgColor) {
   // CRITICAL: Only set accent variables if:
   // 1. NOT on profile screen at all, OR
   // 2. On profile screen but viewing someone else (viewingUserId is set)
-  const viewingSomeoneElse = onProfileScreen && viewingUserId;
+  const viewingSomeoneElse = !!(onProfileScreen && viewingUserId);
+  const shouldSetAccent = !onProfileScreen || viewingSomeoneElse;
   
   // VISIBLE DEBUG
   if (onProfileScreen) {
     const debugTheme = document.createElement('div');
     debugTheme.style.cssText = 'position:fixed;bottom:10px;left:10px;background:orange;color:black;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid black;';
-    debugTheme.innerHTML = `generateCompleteTheme CALLED:<br>onProfile: ${onProfileScreen}<br>viewingUserId: ${viewingUserId || 'NULL'}<br>viewingSomeone: ${viewingSomeoneElse}<br>Will set accent: ${!onProfileScreen || viewingSomeoneElse}<br>finalAccent: ${finalAccent}`;
+    debugTheme.innerHTML = `generateCompleteTheme CALLED:<br>onProfile: ${onProfileScreen}<br>viewingUserId: ${viewingUserId || 'NULL'}<br>viewingSomeone: ${viewingSomeoneElse}<br>shouldSetAccent: ${shouldSetAccent}<br>finalAccent: ${finalAccent}`;
     document.body.appendChild(debugTheme);
     setTimeout(() => debugTheme.remove(), 3000);
   }
   
-  if (!onProfileScreen || viewingSomeoneElse) {
+  if (shouldSetAccent) {
     document.documentElement.style.setProperty('--accent', finalAccent);
     document.documentElement.style.setProperty('--accent-text', accentTextColor);
     document.documentElement.style.setProperty('--accent-light', lightGlow);
@@ -3766,6 +3767,13 @@ async function viewUserProfile(userId) {
     }
     
     // Now set the banner
+    // DEBUG: Show what we have
+    const profileDebugData = document.createElement('div');
+    profileDebugData.style.cssText = 'position:fixed;top:10px;left:10px;background:red;color:white;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid white;max-width:300px;';
+    profileDebugData.innerHTML = `PROFILE DATA DEBUG:<br>banner_color: ${profile.banner_color || 'NULL'}<br>profile_color: ${profile.profile_color || 'NULL'}<br>background_color: ${profile.background_color || 'NULL'}<br><button onclick="this.parentElement.remove()" style="margin-top:5px;padding:3px 8px;">CLOSE</button>`;
+    document.body.appendChild(profileDebugData);
+    setTimeout(() => profileDebugData.remove(), 8000);
+    
     if (profile.banner_color) {
       if (profile.banner_color.startsWith('data:image')) {
         // It's a base64 banner IMAGE - use it for banner
