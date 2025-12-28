@@ -1743,6 +1743,9 @@ function generateCompleteTheme(bgColor) {
   const panelBorder = hsl.l > 50 ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
   const lightBorder = hslToHex(hsl.h, Math.max(hsl.s * 0.8, 40), 75);
   
+  // CRITICAL: Check if we're on profile screen - if so, DON'T set glow variables
+  const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
+  
   // Check for profile glow first (if profileCustomization exists), then site glow, then auto
   const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
   const activeGlowColor = profileGlow || customGlowColor;
@@ -1761,16 +1764,30 @@ function generateCompleteTheme(bgColor) {
   // Calculate contrasting text color for accent buttons
   const accentTextColor = getContrastColor(finalAccent);
   
-  console.log('🎨 Theme generated - Accent:', finalAccent, 'Light:', lightGlow, 'Text:', accentTextColor);
+  console.log('🎨 Theme generated - Accent:', finalAccent, 'Light:', lightGlow, 'Text:', accentTextColor, 'OnProfile:', onProfileScreen);
   
   // Set all CSS variables
   document.documentElement.style.setProperty('--bg-primary', bgColor);
   document.documentElement.style.setProperty('--bg-secondary', secondary);
   document.documentElement.style.setProperty('--bg-tertiary', tertiary);
-  document.documentElement.style.setProperty('--accent', finalAccent);
-  document.documentElement.style.setProperty('--accent-text', accentTextColor);
+  
+  // CRITICAL: Only set accent variables if:
+  // 1. NOT on profile screen at all, OR
+  // 2. On profile screen but viewing someone else (viewingUserId is set)
+  const viewingSomeoneElse = onProfileScreen && viewingUserId;
+  
+  if (!onProfileScreen || viewingSomeoneElse) {
+    document.documentElement.style.setProperty('--accent', finalAccent);
+    document.documentElement.style.setProperty('--accent-text', accentTextColor);
+    document.documentElement.style.setProperty('--accent-light', lightGlow);
+    const accentRgb = hexToRgb(finalAccent);
+    document.documentElement.style.setProperty('--accent-rgb', `${accentRgb.r},${accentRgb.g},${accentRgb.b}`);
+    console.log('✅ Set accent - onProfile:', onProfileScreen, 'viewingOther:', viewingSomeoneElse);
+  } else {
+    console.log('⏭️ Skipped accent (on own profile)');
+  }
+  
   document.documentElement.style.setProperty('--border-light', lightBorder);
-  document.documentElement.style.setProperty('--accent-light', lightGlow);
   document.documentElement.style.setProperty('--text-primary', textPrimary);
   document.documentElement.style.setProperty('--text-secondary', textSecondary);
   document.documentElement.style.setProperty('--border-color', borderColor);
@@ -1783,10 +1800,6 @@ function generateCompleteTheme(bgColor) {
   document.documentElement.style.setProperty('--card-hue', hsl.h);
   document.documentElement.style.setProperty('--card-sat', hsl.s + '%');
   document.documentElement.style.setProperty('--card-light', hsl.l + '%');
-  
-  // Set accent RGB for use in rgba()
-  const accentRgb = hexToRgb(finalAccent);
-  document.documentElement.style.setProperty('--accent-rgb', `${accentRgb.r},${accentRgb.g},${accentRgb.b}`);
   
   // CRITICAL: Restore background if it was locked
   if (window.profileBackgroundLocked && savedBackgroundImage) {
