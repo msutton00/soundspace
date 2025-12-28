@@ -3869,14 +3869,19 @@ async function viewUserProfile(userId) {
     // CRITICAL: Make absolutely sure banner content container is visible
     // Use more specific selector to avoid getting the song indicator div
     const bannerContentDiv = bannerEl.querySelector('div[style*="position:absolute"][style*="bottom:0"]');
-    console.log('Banner content div found:', !!bannerContentDiv);
+    
+    // Create visible debug for banner
+    const bannerDebug = document.createElement('div');
+    bannerDebug.style.cssText = 'position:fixed;top:10px;right:10px;background:blue;color:white;padding:10px;z-index:999999;font-size:11px;font-family:monospace;max-width:300px;';
+    bannerDebug.innerHTML = `BANNER DEBUG:<br>Banner found: ${!!bannerEl}<br>Content div found: ${!!bannerContentDiv}<br>Username: ${displayName}<br>Bio: ${bio || 'No bio yet'}<br>Banner bg: ${bannerEl?.style.background?.substring(0, 30)}...`;
+    document.body.appendChild(bannerDebug);
+    setTimeout(() => bannerDebug.remove(), 5000);
     
     if (bannerContentDiv) {
       // Force display with !important by adding to inline style
       bannerContentDiv.style.display = 'flex';
       bannerContentDiv.style.visibility = 'visible';
       bannerContentDiv.style.opacity = '1';
-      console.log('Banner content div forced visible');
     }
     
     // Force all text elements visible
@@ -3885,7 +3890,6 @@ async function viewUserProfile(userId) {
         el.style.display = el === avatarEl ? 'flex' : 'block';
         el.style.visibility = 'visible';
         el.style.opacity = '1';
-        console.log('Forced visible:', el.id);
       }
     });
     
@@ -7309,6 +7313,15 @@ document.addEventListener('visibilitychange', function() {
     // Tab just became visible - restore glow IMMEDIATELY and REPEATEDLY
     const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
     
+    // Create visible debug
+    let debugEl = document.getElementById('visible-debug');
+    if (!debugEl) {
+      debugEl = document.createElement('div');
+      debugEl.id = 'visible-debug';
+      debugEl.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:white;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid red;';
+      document.body.appendChild(debugEl);
+    }
+    
     const applyGlow = () => {
       if (onProfileScreen && savedProfileGlowColor) {
         // On profile - set profile glow
@@ -7324,6 +7337,8 @@ document.addEventListener('visibilitychange', function() {
         document.documentElement.style.setProperty('--accent-light', lightGlow);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
         
+        debugEl.innerHTML = `TAB SWITCH DEBUG:<br>OnProfile: YES<br>ProfileGlow: ${savedProfileGlowColor}<br>Applied: ${savedProfileGlowColor}<br>Time: ${Date.now()}`;
+        
       } else if (customGlowColor) {
         // Not on profile - set site glow
         profileCustomization.glowColor = null;
@@ -7337,6 +7352,8 @@ document.addEventListener('visibilitychange', function() {
         document.documentElement.style.setProperty('--accent-text', textColor);
         document.documentElement.style.setProperty('--accent-light', lightGlow);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+        
+        debugEl.innerHTML = `TAB SWITCH DEBUG:<br>OnProfile: NO<br>SiteGlow: ${customGlowColor}<br>Applied: ${customGlowColor}<br>Time: ${Date.now()}`;
       }
     };
     
@@ -7348,6 +7365,11 @@ document.addEventListener('visibilitychange', function() {
     setTimeout(applyGlow, 50);
     // Apply again after 100ms
     setTimeout(applyGlow, 100);
+    
+    // Clear debug after 3 seconds
+    setTimeout(() => {
+      if (debugEl) debugEl.remove();
+    }, 3000);
   }
 });
 
