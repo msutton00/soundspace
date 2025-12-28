@@ -258,8 +258,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .nav-link:hover{color:#ffffff;text-shadow:0 0 20px var(--accent-light),0 0 40px var(--accent-light),0 0 60px var(--accent-light)}
 .nav-link.active{color:#ffffff;text-shadow:0 0 30px var(--accent-light),0 0 60px var(--accent-light),0 0 90px var(--accent-light)}
 .search-bar{flex:1;position:relative}
-.search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:.9rem}
-.search-input{width:100%;padding:.6rem 1rem .6rem 2.75rem;background:var(--bg-secondary);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border-color);border-radius:500px;color:var(--text-primary);font-size:.875rem;font-family:'Inter',sans-serif;transition:all .2s;cursor:text}
+.search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--input-text);font-size:.9rem;opacity:0.6}
+.search-input{width:100%;padding:.6rem 1rem .6rem 2.75rem;background:var(--bg-secondary);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border-color);border-radius:500px;color:var(--input-text);font-size:.875rem;font-family:'Inter',sans-serif;transition:all .2s;cursor:text}
 .search-tab{transition:all .2s}
 .search-tab:hover{color:var(--text-primary)!important}
 .search-tab.active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
@@ -383,7 +383,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .modal-overlay.show{display:flex}
 .modal{background:hsla(var(--nav-hue, 210),var(--nav-sat, 40%),var(--nav-light, 20%),0.92);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--border-color);border-radius:12px;padding:2.5rem;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative}
 .modal h3{font-size:1.75rem;margin-bottom:2rem;font-weight:700;text-shadow:0 0 20px var(--accent),0 0 40px var(--accent)}
-.input{width:100%;padding:.875rem 1.25rem;background:rgba(255,255,255,.05);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:.95rem;margin-bottom:1rem;font-family:'Inter',sans-serif;transition:all .2s}
+.input{width:100%;padding:.875rem 1.25rem;background:rgba(255,255,255,.05);border:1px solid var(--border-color);border-radius:8px;color:var(--input-text);font-size:.95rem;margin-bottom:1rem;font-family:'Inter',sans-serif;transition:all .2s}
 .input:focus{outline:0;border-color:var(--accent);background:rgba(255,255,255,.08)}
 .input::placeholder{color:var(--text-secondary);opacity:.6}
 textarea.input{resize:vertical;font-family:'Inter',sans-serif}
@@ -514,7 +514,7 @@ textarea.input{resize:vertical;font-family:'Inter',sans-serif}
 .auth-tab{background:transparent;border:none;color:rgba(255,255,255,0.4);padding:.75rem 1.5rem;cursor:pointer;font-size:.95rem;font-weight:600;border-bottom:2px solid transparent;transition:all .2s;border-radius:8px 8px 0 0}
 .auth-tab.active{color:#fff;background:var(--accent);border-bottom-color:var(--accent);font-weight:700}
 .auth-tab:hover:not(.active){color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.05)}
-.input{width:100%;padding:.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:.95rem;transition:all .2s}
+.input{width:100%;padding:.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;color:var(--input-text);font-size:.95rem;transition:all .2s}
 .input:focus{outline:none;border-color:var(--accent);background:var(--bg-tertiary)}
 .input::placeholder{color:var(--text-secondary);opacity:.6}
 .modal.show{display:flex !important}
@@ -778,14 +778,14 @@ textarea.input{resize:vertical;font-family:'Inter',sans-serif}
     <div style="flex:1;padding-bottom:0.5rem">
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem">
         <h1 id="profileUsername" style="margin:0;font-size:2rem;text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 0 0 3px var(--accent), 0 0 5px var(--accent), 2px 0 0 var(--accent), -2px 0 0 var(--accent), 0 2px 0 var(--accent), 0 -2px 0 var(--accent)">Music Lover</h1>
-        <button id="editProfileBtn" class="btn btn-secondary" onclick="openEditProfileModal()" style="padding:0.4rem 1.2rem;font-size:0.8rem;background:white;color:black;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Edit Profile</button>
+        <button id="editProfileBtn" class="btn btn-secondary" onclick="openEditProfileModal()" style="padding:0.4rem 1.2rem;font-size:0.8rem;background:white;color:white;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Edit Profile</button>
         <button id="followBtn" class="btn btn-primary" onclick="toggleFollowFromProfile(viewingUserId)" style="padding:0.4rem 1.2rem;font-size:0.8rem;display:none;min-width:100px">Follow</button>
       </div>
       <p class="profile-username" id="profileUsernameAt" style="margin:0.25rem 0;text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">@musiclover</p>
       <p class="profile-bio" id="profileBio" style="margin:0.5rem 0 1rem 0;text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Music enthusiast and creator</p>
       <div id="profileActionButtons" style="display:flex;gap:1rem;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="showScreen('upload')" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:black;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Upload Track</button>
-        <button class="btn btn-secondary" onclick="openCreatePlaylist()" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:black;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Create Playlist</button>
+        <button class="btn btn-primary" onclick="showScreen('upload')" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:white;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Upload Track</button>
+        <button class="btn btn-secondary" onclick="openCreatePlaylist()" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:white;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Create Playlist</button>
       </div>
     </div>
   </div>
@@ -1801,6 +1801,10 @@ function generateCompleteTheme(bgColor) {
   // Calculate dynamic text stroke color
   const textStrokeColor = calculateTextStroke(bgColor, finalAccent);
   document.documentElement.style.setProperty('--text-stroke', textStrokeColor);
+  
+  // Calculate input text color (black for light backgrounds, white for dark)
+  const inputTextColor = hsl.l > 50 ? '#000000' : '#ffffff';
+  document.documentElement.style.setProperty('--input-text', inputTextColor);
   
   // NEW: Set card CSS variables to match background
   document.documentElement.style.setProperty('--card-hue', hsl.h);
@@ -4601,13 +4605,31 @@ function showScreen(screenName) {
         }
         
         // Restore original glow colors
-        if (window.originalProfileData.siteGlowColor) {
+        if (window.originalProfileData.siteGlowColor !== undefined) {
           customGlowColor = window.originalProfileData.siteGlowColor;
           console.log('✨ Restored site glow:', customGlowColor);
         }
-        if (window.originalProfileData.profileGlowColor) {
+        if (window.originalProfileData.profileGlowColor !== undefined) {
           savedProfileGlowColor = window.originalProfileData.profileGlowColor;
           console.log('✨ Restored profile glow:', savedProfileGlowColor);
+        }
+        
+        // CRITICAL: Re-apply the glow to CSS variables
+        const activeGlow = savedProfileGlowColor || customGlowColor;
+        if (activeGlow) {
+          const textColor = getContrastColor(activeGlow);
+          const rgb = hexToRgb(activeGlow);
+          const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+          const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+          
+          document.documentElement.style.setProperty('--accent', activeGlow);
+          document.documentElement.style.setProperty('--accent-text', textColor);
+          document.documentElement.style.setProperty('--accent-light', lightGlow);
+          document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+          console.log('✅ Re-applied glow to CSS:', activeGlow);
+        } else {
+          // No custom glow - regenerate from theme
+          generateCompleteTheme(window.originalProfileData.siteTheme || document.body.style.backgroundColor || '#050d1a');
         }
         
         // Restore body background image/color
