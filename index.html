@@ -2612,6 +2612,7 @@ function togglePanelGlow() {
 async function setProfileGlowColor() {
   const color = document.getElementById('glowColorPicker').value;
   profileCustomization.glowColor = color;
+  savedProfileGlowColor = color; // CRITICAL: Update this so it persists
   
   console.log('🎨 Setting profile glow to:', color);
   
