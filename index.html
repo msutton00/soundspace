@@ -4614,8 +4614,19 @@ function showScreen(screenName) {
           console.log('✨ Restored profile glow:', savedProfileGlowColor);
         }
         
-        // CRITICAL: Re-apply the glow to CSS variables
-        const activeGlow = savedProfileGlowColor || customGlowColor;
+        // CRITICAL: Re-apply the CORRECT glow based on which screen we're on
+        const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
+        
+        // If on profile screen, use profile glow (if set), else use site glow
+        // If NOT on profile screen (e.g., home), ONLY use site glow
+        let activeGlow;
+        if (onProfileScreen) {
+          activeGlow = savedProfileGlowColor || customGlowColor;
+        } else {
+          // NOT on profile screen - use ONLY site-wide glow
+          activeGlow = customGlowColor;
+        }
+        
         if (activeGlow) {
           const textColor = getContrastColor(activeGlow);
           const rgb = hexToRgb(activeGlow);
@@ -4626,7 +4637,7 @@ function showScreen(screenName) {
           document.documentElement.style.setProperty('--accent-text', textColor);
           document.documentElement.style.setProperty('--accent-light', lightGlow);
           document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-          console.log('✅ Re-applied glow to CSS:', activeGlow);
+          console.log('✅ Re-applied glow to CSS:', activeGlow, '(onProfile:', onProfileScreen + ')');
         } else {
           // No custom glow - regenerate from theme
           generateCompleteTheme(window.originalProfileData.siteTheme || document.body.style.backgroundColor || '#050d1a');
