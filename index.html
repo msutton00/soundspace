@@ -727,7 +727,7 @@ textarea.input{resize:vertical;font-family:'Inter',sans-serif}
 <div class="dropdown-item" onclick="showScreen('profile')">Profile</div>
 <div class="dropdown-item" onclick="showScreen('upload')">Upload</div>
 <div class="dropdown-item" onclick="showScreen('settings')">Settings</div>
-<div class="dropdown-item" onclick="handleLogout()" style="color:#ff6b6b;border-top:1px solid var(--border-color);margin-top:.5rem;padding-top:.75rem">Logout</div>
+<div class="dropdown-item" onclick="handleLogout()" style="color:white;border:2px solid #ff6b6b;border-radius:6px;margin-top:.5rem;padding:.5rem .75rem;background:transparent">Logout</div>
 </div>
 </div>
 </div>
@@ -2629,13 +2629,6 @@ async function setProfileGlowColor() {
   document.documentElement.style.setProperty('--accent-light', lightGlow);
   document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
   
-  // Show feedback
-  const msg = document.createElement('div');
-  msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:15px 20px;border-radius:8px;z-index:99999;';
-  msg.textContent = '✅ Profile glow applied: ' + color;
-  document.body.appendChild(msg);
-  setTimeout(() => msg.remove(), 3000);
-  
   applyProfileCustomization();
   
   // Save to database as profile_glow_color (separate field)
@@ -2955,23 +2948,10 @@ async function changeProfileColor(color) {
             bannerEl.style.webkitBackdropFilter = 'blur(40px) saturate(180%)';
           }
         }
-        
-        // Show success
-        const successDiv = document.createElement('div');
-        successDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:green;color:white;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-        successDiv.innerHTML = '✅ Profile color saved!<br>Others will see this on your profile';
-        document.body.appendChild(successDiv);
-        setTimeout(() => successDiv.remove(), 3000);
       }
     } catch (err) {
       console.error('❌ EXCEPTION:', err);
     }
-  } else {
-    const warnDiv = document.createElement('div');
-    warnDiv.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:orange;color:black;padding:20px;border-radius:8px;z-index:99999;font-size:16px;';
-    warnDiv.textContent = '⚠️ Not logged in';
-    document.body.appendChild(warnDiv);
-    setTimeout(() => warnDiv.remove(), 3000);
   }
 }
 
@@ -3860,13 +3840,6 @@ async function viewUserProfile(userId) {
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      
-      // Show notification
-      const msg = document.createElement('div');
-      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
-      msg.textContent = 'Viewing profile glow: ' + profile.profile_glow_color;
-      document.body.appendChild(msg);
-      setTimeout(() => msg.remove(), 2000);
     } else {
       console.log('⚠️ Viewed user has no profile glow set');
       // Clear profile glow so their background theme glow shows
@@ -4615,22 +4588,8 @@ function showScreen(screenName) {
         document.documentElement.style.setProperty('--accent-text', textColor);
         document.documentElement.style.setProperty('--accent-light', lightGlow);
         document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-        
-        // Show visual confirmation
-        const msg = document.createElement('div');
-        msg.style.cssText = 'position:fixed;top:20px;right:20px;background:blue;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
-        msg.textContent = 'Profile glow: ' + profileCustomization.glowColor;
-        document.body.appendChild(msg);
-        setTimeout(() => msg.remove(), 2000);
       } else {
         console.log('⚠️ No profile glow set, using site glow');
-        
-        // Show visual confirmation
-        const msg = document.createElement('div');
-        msg.style.cssText = 'position:fixed;top:20px;right:20px;background:orange;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
-        msg.textContent = 'Using site glow: ' + (customGlowColor || 'auto');
-        document.body.appendChild(msg);
-        setTimeout(() => msg.remove(), 2000);
       }
     } else if (screenName === 'settings') {
       // Load current display name and bio from profile
