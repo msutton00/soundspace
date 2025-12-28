@@ -1688,13 +1688,6 @@ function applyProfileStyles() {
 
 // Override generateCompleteTheme to also set card colors
 function generateCompleteTheme(bgColor) {
-  // CRITICAL: If on profile screen with profile glow active, preserve it
-  const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-  const hasProfileGlow = savedProfileGlowColor && onProfileScreen;
-  
-  // Temporarily save profile glow if it exists
-  const savedGlow = hasProfileGlow ? savedProfileGlowColor : null;
-  
   // Extract HSL from background color
   const rgb = hexToRgb(bgColor);
   const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -1794,21 +1787,6 @@ function generateCompleteTheme(bgColor) {
   // Set accent RGB for use in rgba()
   const accentRgb = hexToRgb(finalAccent);
   document.documentElement.style.setProperty('--accent-rgb', `${accentRgb.r},${accentRgb.g},${accentRgb.b}`);
-  
-  // CRITICAL: If we saved profile glow, restore it NOW
-  if (savedGlow) {
-    profileCustomization.glowColor = savedGlow;
-    const textColor = getContrastColor(savedGlow);
-    const rgb = hexToRgb(savedGlow);
-    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-    const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
-    
-    // Override the accent that was just set
-    document.documentElement.style.setProperty('--accent', savedGlow);
-    document.documentElement.style.setProperty('--accent-text', textColor);
-    document.documentElement.style.setProperty('--accent-light', lightGlow);
-    document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-  }
   
   // CRITICAL: Restore background if it was locked
   if (window.profileBackgroundLocked && savedBackgroundImage) {
@@ -7321,11 +7299,19 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
 // Immediate restoration when tab becomes visible again
 document.addEventListener('visibilitychange', function() {
   if (!document.hidden) {
-    // Tab just became visible - SYNCHRONOUSLY restore correct glow BEFORE anything else
+    // Tab just became visible
     const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
     
+    // Create or get override style element
+    let styleOverride = document.getElementById('glow-override-style');
+    if (!styleOverride) {
+      styleOverride = document.createElement('style');
+      styleOverride.id = 'glow-override-style';
+      document.head.appendChild(styleOverride);
+    }
+    
     if (onProfileScreen && savedProfileGlowColor) {
-      // On profile - forcibly set profile glow with highest priority
+      // On profile - inject profile glow with !important
       profileCustomization.glowColor = savedProfileGlowColor;
       
       const textColor = getContrastColor(savedProfileGlowColor);
@@ -7333,17 +7319,22 @@ document.addEventListener('visibilitychange', function() {
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
       const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
       
-      // Set IMMEDIATELY and SYNCHRONOUSLY
+      // Inject with !important to override everything
+      styleOverride.textContent = `:root {
+        --accent: ${savedProfileGlowColor} !important;
+        --accent-text: ${textColor} !important;
+        --accent-light: ${lightGlow} !important;
+        --accent-rgb: ${rgb.r},${rgb.g},${rgb.b} !important;
+      }`;
+      
+      // Also set on document for non-!important selectors
       document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
-      // Force a reflow to ensure this applies before any other code runs
-      void document.documentElement.offsetHeight;
-      
     } else if (customGlowColor) {
-      // Not on profile - restore site glow
+      // Not on profile - inject site glow
       profileCustomization.glowColor = null;
       
       const textColor = getContrastColor(customGlowColor);
@@ -7351,85 +7342,35 @@ document.addEventListener('visibilitychange', function() {
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
       const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
       
+      styleOverride.textContent = `:root {
+        --accent: ${customGlowColor} !important;
+        --accent-text: ${textColor} !important;
+        --accent-light: ${lightGlow} !important;
+        --accent-rgb: ${rgb.r},${rgb.g},${rgb.b} !important;
+      }`;
+      
       document.documentElement.style.setProperty('--accent', customGlowColor);
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      
-      // Force a reflow
-      void document.documentElement.offsetHeight;
+    } else {
+      // No override needed
+      styleOverride.textContent = '';
     }
+    
+    // Remove override after a short delay to not interfere with normal operation
+    setTimeout(() => {
+      if (styleOverride) styleOverride.textContent = '';
+    }, 500);
   }
 }, true); // Use capture phase to run BEFORE other handlers
 
 // FINAL OVERRIDE - Must be at end to override minified code
 // This ensures siteBackgroundColor, customGlowColor, and playlists are ALWAYS restored
-setInterval(() => {
-  const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-  
-  // If on profile screen, restore profile glow instead of site glow
-  if (onProfileScreen && savedProfileGlowColor) {
-    // Make sure profile glow is active
-    if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
-      profileCustomization.glowColor = savedProfileGlowColor;
-      
-      const textColor = getContrastColor(savedProfileGlowColor);
-      const rgb = hexToRgb(savedProfileGlowColor);
-      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-      const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
-      
-      document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
-      document.documentElement.style.setProperty('--accent-text', textColor);
-      document.documentElement.style.setProperty('--accent-light', lightGlow);
-      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-    }
-    return; // Don't restore site stuff when on profile
-  }
-  
-  // Not on profile screen - restore site glow and background
-  const savedData = localStorage.getItem('basspace_data');
-  if (!savedData) return;
-  
-  try {
-    const data = JSON.parse(savedData);
-    
-    // Restore background color
-    if (currentSiteBackgroundColor && currentSiteBackgroundColor !== '#050d1a') {
-      const currentBg = document.body.style.backgroundColor;
-      if (currentBg !== currentSiteBackgroundColor) {
-        document.body.style.backgroundColor = currentSiteBackgroundColor;
-        document.body.style.backgroundImage = '';
-        document.body.style.backgroundSize = '';
-        document.body.style.backgroundPosition = '';
-        document.body.style.backgroundAttachment = '';
-      }
-    }
-    
-    // Restore custom glow color
-    if (customGlowColor && !profileCustomization.glowColor) {
-      // Only restore site glow if profile glow is NOT active
-      const currentAccent = document.documentElement.style.getPropertyValue('--accent');
-      if (currentAccent !== customGlowColor) {
-        const textColor = getContrastColor(customGlowColor);
-        const rgb = hexToRgb(customGlowColor);
-        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-        const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
-        
-        document.documentElement.style.setProperty('--accent', customGlowColor);
-        document.documentElement.style.setProperty('--accent-text', textColor);
-        document.documentElement.style.setProperty('--accent-light', lightGlow);
-        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      }
-    }
-    
-    // Restore playlists if they got cleared (but user is still logged in)
-    if (currentUser && data.playlists && data.playlists.length > 0 && playlists.length === 0) {
-      playlists = data.playlists;
-    }
-  } catch (e) {
-    // Silent error
-  }
-}, 2000); // Check every 2 seconds (reduced frequency)
+// DISABLED - Causing flickering and conflicts
+// setInterval(() => {
+//   ... auto-restore code disabled ...
+// }, 2000);
 
 // ============================================
 // PLAYLIST CUSTOMIZATION SYSTEM
