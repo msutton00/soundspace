@@ -778,7 +778,7 @@ textarea.input{resize:vertical;font-family:'Inter',sans-serif}
     <div style="flex:1;padding-bottom:0.5rem">
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem">
         <h1 id="profileUsername" style="margin:0;font-size:2rem;text-shadow:0 2px 8px rgba(0,0,0,0.8),-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">Music Lover</h1>
-        <button id="editProfileBtn" class="btn btn-secondary" onclick="openEditProfileModal()" style="padding:0.4rem 1.2rem;font-size:0.8rem">Edit Profile</button>
+        <button id="editProfileBtn" class="btn btn-secondary" onclick="openEditProfileModal()" style="padding:0.4rem 1.2rem;font-size:0.8rem;background:white;color:black;border:3px solid black;text-shadow:none">Edit Profile</button>
       </div>
       <p class="profile-username" id="profileUsernameAt" style="margin:0.25rem 0;text-shadow:0 1px 4px rgba(0,0,0,0.8),-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">@musiclover</p>
       <p class="profile-bio" id="profileBio" style="margin:0.5rem 0 1rem 0;text-shadow:0 1px 4px rgba(0,0,0,0.8),-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">Music enthusiast and creator</p>
@@ -7031,7 +7031,7 @@ async function loadFollowers(userId) {
       const displayName = profile.display_name || profile.username;
       const avatar = profile.profile_picture || '';
       
-      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
+      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:2px solid rgba(0,0,0,0.5);border-radius:8px;padding:1.5rem;text-align:center">';
       html += '<div onclick="viewUserProfile(\'' + profile.id + '\')" style="cursor:pointer">';
       
       if (avatar) {
@@ -7040,8 +7040,8 @@ async function loadFollowers(userId) {
         html += '<div style="width:80px;height:80px;margin:0 auto 1rem;border-radius:50%;background:linear-gradient(135deg, var(--accent), var(--accent-light));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700">' + displayName.substring(0,2).toUpperCase() + '</div>';
       }
       
-      html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">' + displayName + '</h3>';
-      html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + profile.username + '</p>';
+      html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 3px rgba(0,0,0,0.8)">' + displayName + '</h3>';
+      html += '<p style="color:var(--text-secondary);font-size:0.875rem;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 3px rgba(0,0,0,0.8)">@' + profile.username + '</p>';
       html += '</div></div>';
     }
     
@@ -7103,7 +7103,7 @@ async function loadFollowing(userId) {
       const displayName = profile.display_name || profile.username;
       const avatar = profile.profile_picture || '';
       
-      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:center">';
+      html += '<div class="user-card" style="background:hsla(var(--card-hue, 210),var(--card-sat, 30%),var(--card-light, 15%),0.6);border:2px solid rgba(0,0,0,0.5);border-radius:8px;padding:1.5rem;text-align:center">';
       html += '<div onclick="viewUserProfile(\'' + profile.id + '\')" style="cursor:pointer">';
       
       if (avatar) {
@@ -7112,8 +7112,8 @@ async function loadFollowing(userId) {
         html += '<div style="width:80px;height:80px;margin:0 auto 1rem;border-radius:50%;background:linear-gradient(135deg, var(--accent), var(--accent-light));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:700">' + displayName.substring(0,2).toUpperCase() + '</div>';
       }
       
-      html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem">' + displayName + '</h3>';
-      html += '<p style="color:var(--text-secondary);font-size:0.875rem">@' + profile.username + '</p>';
+      html += '<h3 style="font-size:1rem;font-weight:700;margin-bottom:0.25rem;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 3px rgba(0,0,0,0.8)">' + displayName + '</h3>';
+      html += '<p style="color:var(--text-secondary);font-size:0.875rem;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 3px rgba(0,0,0,0.8)">@' + profile.username + '</p>';
       html += '</div>';
       
       // Add unfollow button
