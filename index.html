@@ -3193,7 +3193,7 @@ async function resetGlowColor() {
   saveData(); // Also save to localStorage for backup
 }
 
-function resetCustomization() {
+async function resetCustomization() {
   // Silent - no confirm, just reset
   profilePicture = 'ML';
   profileBanner = 'linear-gradient(135deg,#0a1929,#132f4c)';
@@ -3209,6 +3209,32 @@ function resetCustomization() {
   updateColorSelection();
   applyProfileStyles();
   saveData();
+  
+  // ALSO update database to clear everything
+  if (supabase && currentUser) {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ 
+          profile_picture: null,
+          banner_color: null,
+          profile_color: null,
+          background_color: '#050d1a',
+          profile_background_image: null
+        })
+        .eq('id', currentUser.id);
+      
+      console.log('✅ Database reset to defaults');
+      
+      // Clear global variables
+      window.userProfileBackgroundImage = null;
+      window.userProfileColor = null;
+      
+    } catch (err) {
+      console.error('❌ Error resetting database:', err);
+    }
+  }
+  
   // Silent - no alert
 }
 
