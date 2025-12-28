@@ -1780,10 +1780,10 @@ function generateCompleteTheme(bgColor) {
   // VISIBLE DEBUG
   if (onProfileScreen) {
     const debugTheme = document.createElement('div');
-    debugTheme.style.cssText = 'position:fixed;bottom:10px;left:10px;background:orange;color:black;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid black;';
-    debugTheme.innerHTML = `generateCompleteTheme CALLED:<br>onProfile: ${onProfileScreen}<br>viewingUserId: ${viewingUserId || 'NULL'}<br>viewingSomeone: ${viewingSomeoneElse}<br>shouldSetAccent: ${shouldSetAccent}<br>finalAccent: ${finalAccent}`;
+    debugTheme.style.cssText = 'position:fixed;bottom:10px;left:10px;background:orange;color:black;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid black;max-width:250px;margin-bottom:5px;';
+    debugTheme.innerHTML = `generateCompleteTheme #${Date.now() % 10000}:<br>shouldSetAccent: ${shouldSetAccent}<br>finalAccent: ${finalAccent}<br><button onclick="this.remove()">X</button>`;
     document.body.appendChild(debugTheme);
-    setTimeout(() => debugTheme.remove(), 3000);
+    setTimeout(() => debugTheme.remove(), 5000);
   }
   
   if (shouldSetAccent) {
@@ -3794,6 +3794,13 @@ async function viewUserProfile(userId) {
         bannerEl.style.background = 'linear-gradient(135deg, ' + profile.banner_color + ', ' + bannerColorLight + ')';
         bannerEl.style.backgroundSize = '';
         bannerEl.style.backgroundPosition = '';
+        
+        // IMMEDIATE CHECK
+        const checkBg = document.createElement('div');
+        checkBg.style.cssText = 'position:fixed;top:100px;left:10px;background:green;color:white;padding:10px;z-index:999999;font-size:11px;font-family:monospace;';
+        checkBg.innerHTML = `BANNER SET (immediate):<br>Set to: ${bannerEl.style.background.substring(0,50)}...<br><button onclick="this.parentElement.remove()">X</button>`;
+        document.body.appendChild(checkBg);
+        setTimeout(() => checkBg.remove(), 5000);
       }
       
       // Still use profile_color for the overall theme if available
