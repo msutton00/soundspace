@@ -2632,6 +2632,9 @@ async function setProfileGlowColor() {
   
   applyProfileCustomization();
   
+  // Close modal so user can see the change
+  closeEditProfileModal();
+  
   // Save to database as profile_glow_color (separate field)
   if (supabase && currentUser) {
     try {
