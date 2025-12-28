@@ -7745,7 +7745,7 @@ setInterval(() => {
 document.addEventListener('click', function(e) {
   // Close profile dropdown when clicking outside
   const profileMenu = document.querySelector('.profile-menu');
-  const dropdown = document.getElementById('profileDropdown');
+  const dropdown = document.getElementById('dropdown');
   if (profileMenu && dropdown && 
       !profileMenu.contains(e.target) && 
       !dropdown.contains(e.target)) {
