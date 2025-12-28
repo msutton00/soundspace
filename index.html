@@ -778,14 +778,14 @@ textarea.input{resize:vertical;font-family:'Inter',sans-serif}
     <div style="flex:1;padding-bottom:0.5rem">
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem">
         <h1 id="profileUsername" style="margin:0;font-size:2rem;text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 0 0 3px var(--accent), 0 0 5px var(--accent), 2px 0 0 var(--accent), -2px 0 0 var(--accent), 0 2px 0 var(--accent), 0 -2px 0 var(--accent)">Music Lover</h1>
-        <button id="editProfileBtn" class="btn btn-secondary" onclick="openEditProfileModal()" style="padding:0.4rem 1.2rem;font-size:0.8rem;background:white;color:black;border:3px solid black;text-shadow:none">Edit Profile</button>
-        <button id="followBtn" class="btn btn-primary" onclick="toggleFollowFromProfile(viewingUserId)" style="padding:0.4rem 1.2rem;font-size:0.8rem;display:none" onmouseover="this.textContent=this.classList.contains('following')?'Unfollow':'Follow'" onmouseout="this.textContent=this.classList.contains('following')?'Following':'Follow'">Follow</button>
+        <button id="editProfileBtn" class="btn btn-secondary" onclick="openEditProfileModal()" style="padding:0.4rem 1.2rem;font-size:0.8rem;background:white;color:black;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Edit Profile</button>
+        <button id="followBtn" class="btn btn-primary" onclick="toggleFollowFromProfile(viewingUserId)" style="padding:0.4rem 1.2rem;font-size:0.8rem;display:none;min-width:100px">Follow</button>
       </div>
       <p class="profile-username" id="profileUsernameAt" style="margin:0.25rem 0;text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">@musiclover</p>
       <p class="profile-bio" id="profileBio" style="margin:0.5rem 0 1rem 0;text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Music enthusiast and creator</p>
       <div id="profileActionButtons" style="display:flex;gap:1rem;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="showScreen('upload')" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:black;border:3px solid black;text-shadow:none">Upload Track</button>
-        <button class="btn btn-secondary" onclick="openCreatePlaylist()" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:black;border:3px solid black;text-shadow:none">Create Playlist</button>
+        <button class="btn btn-primary" onclick="showScreen('upload')" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:black;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Upload Track</button>
+        <button class="btn btn-secondary" onclick="openCreatePlaylist()" style="padding:0.6rem 1.5rem;font-size:0.9rem;background:white;color:black;border:3px solid var(--accent);text-shadow:0 0 1px var(--accent), 0 0 2px var(--accent), 1px 0 0 var(--accent), -1px 0 0 var(--accent), 0 1px 0 var(--accent), 0 -1px 0 var(--accent)">Create Playlist</button>
       </div>
     </div>
   </div>
@@ -3736,11 +3736,28 @@ async function viewUserProfile(userId) {
         followBtn.textContent = 'Following';
         followBtn.classList.add('following');
         followBtn.style.background = 'rgba(255,255,255,0.1)';
+        followBtn.style.color = '#fff';
       } else {
         followBtn.textContent = 'Follow';
         followBtn.classList.remove('following');
         followBtn.style.background = 'var(--accent)';
+        followBtn.style.color = 'var(--accent-text)';
       }
+      
+      // Add hover handlers
+      followBtn.onmouseenter = function() {
+        if (this.classList.contains('following')) {
+          this.textContent = 'Unfollow';
+          this.style.background = '#ef4444'; // Red for unfollow
+        }
+      };
+      
+      followBtn.onmouseleave = function() {
+        if (this.classList.contains('following')) {
+          this.textContent = 'Following';
+          this.style.background = 'rgba(255,255,255,0.1)';
+        }
+      };
     }
     
     // Update the profile screen with their data
@@ -4008,6 +4025,9 @@ async function viewUserProfile(userId) {
         usernameAtEl.style.visibility = 'visible';
       }
     }, 100);
+    
+    // Update follower/following counts
+    await updateFollowerCounts(userId);
     
   } catch (err) {
     console.error('Error loading user profile:', err);
@@ -7274,23 +7294,104 @@ async function loadUserStats(userId) {
 
 // Toggle follow from profile page (refreshes the list after)
 async function toggleFollowFromProfile(userId) {
-  if (!currentUser) return;
+  if (!currentUser) {
+    alert('Please login to follow users');
+    return;
+  }
+  
+  const btn = document.getElementById('followBtn');
+  if (!btn) return;
+  
+  const isFollowing = btn.classList.contains('following');
   
   try {
-    // Unfollow
-    const { error } = await supabase
-      .from('follows')
-      .delete()
-      .eq('follower_id', currentUser.id)
-      .eq('following_id', userId);
+    if (isFollowing) {
+      // Unfollow
+      const { error } = await supabase
+        .from('followers')
+        .delete()
+        .eq('follower_id', currentUser.id)
+        .eq('following_id', userId);
+      
+      if (error) throw error;
+      
+      btn.textContent = 'Follow';
+      btn.classList.remove('following');
+      btn.style.background = 'var(--accent)';
+      btn.style.color = 'var(--accent-text)';
+    } else {
+      // Follow
+      const { error } = await supabase
+        .from('followers')
+        .insert({
+          follower_id: currentUser.id,
+          following_id: userId,
+          created_at: new Date().toISOString()
+        });
+      
+      if (error) throw error;
+      
+      btn.textContent = 'Following';
+      btn.classList.add('following');
+      btn.style.background = 'rgba(255,255,255,0.1)';
+      btn.style.color = '#fff';
+    }
     
-    if (error) throw error;
+    // IMMEDIATE UI UPDATES
+    // Update follower/following counts
+    await updateFollowerCounts(userId);
     
-    // Reload the following list
-    loadFollowing();
+    // If we're on the followers/following tab, refresh the list
+    const followersTab = document.querySelector('[onclick*="showFollowersTab"]');
+    const followingTab = document.querySelector('[onclick*="showFollowingTab"]');
+    
+    if (followersTab?.classList.contains('active')) {
+      await loadFollowers(userId);
+    }
+    if (followingTab?.classList.contains('active')) {
+      await loadFollowing(userId);
+    }
+    
   } catch (err) {
-    console.error('Error unfollowing:', err);
-    alert('Error unfollowing user. Please try again.');
+    console.error('Error toggling follow:', err);
+    alert('Error updating follow status. Please try again.');
+  }
+}
+
+// Update follower/following counts
+async function updateFollowerCounts(userId) {
+  const targetUserId = userId || viewingUserId;
+  if (!targetUserId) return;
+  
+  try {
+    // Get follower count
+    const { data: followers, error: followerError } = await supabase
+      .from('followers')
+      .select('follower_id')
+      .eq('following_id', targetUserId);
+    
+    // Get following count
+    const { data: following, error: followingError } = await supabase
+      .from('followers')
+      .select('following_id')
+      .eq('follower_id', targetUserId);
+    
+    if (!followerError && followers) {
+      const followerCountEl = document.querySelector('[onclick*="showFollowersTab"]');
+      if (followerCountEl) {
+        const countText = followers.length === 1 ? '1 Follower' : `${followers.length} Followers`;
+        followerCountEl.innerHTML = `<span class="tab-icon">👥</span> ${countText}`;
+      }
+    }
+    
+    if (!followingError && following) {
+      const followingCountEl = document.querySelector('[onclick*="showFollowingTab"]');
+      if (followingCountEl) {
+        followingCountEl.innerHTML = `<span class="tab-icon">👤</span> ${following.length} Following`;
+      }
+    }
+  } catch (err) {
+    console.error('Error updating counts:', err);
   }
 }
 
