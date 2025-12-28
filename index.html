@@ -7743,6 +7743,15 @@ setInterval(() => {
 
 // GLOBAL: Click outside to close modals and menus
 document.addEventListener('click', function(e) {
+  // Close profile dropdown when clicking outside
+  const profileMenu = document.querySelector('.profile-menu');
+  const dropdown = document.getElementById('profileDropdown');
+  if (profileMenu && dropdown && 
+      !profileMenu.contains(e.target) && 
+      !dropdown.contains(e.target)) {
+    dropdown.classList.remove('show');
+  }
+  
   // Close all modals when clicking on their backdrop
   const modals = [
     'editProfileModal',
