@@ -7741,6 +7741,107 @@ setInterval(() => {
   }
 }, 100); // Check every 100ms
 
+// GLOBAL: Click outside to close modals and menus
+document.addEventListener('click', function(e) {
+  // Close all modals when clicking on their backdrop
+  const modals = [
+    'editProfileModal',
+    'editTrackModal', 
+    'createPlaylistModal',
+    'addToPlaylistModal',
+    'authModal'
+  ];
+  
+  modals.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal && modal.classList.contains('show') && e.target === modal) {
+      // Clicked on backdrop, close modal
+      modal.classList.remove('show');
+      
+      // Reset specific modals
+      if (modalId === 'createPlaylistModal') {
+        document.getElementById('playlistNameInput').value = '';
+      }
+      if (modalId === 'addToPlaylistModal') {
+        currentTrackToAdd = null;
+      }
+    }
+  });
+});
+
+// GLOBAL: Enter key to submit/apply in modals and inputs
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    // Create Playlist Modal
+    const createPlaylistModal = document.getElementById('createPlaylistModal');
+    if (createPlaylistModal && createPlaylistModal.classList.contains('show')) {
+      const playlistInput = document.getElementById('playlistNameInput');
+      if (document.activeElement === playlistInput || playlistInput.value.trim()) {
+        e.preventDefault();
+        confirmCreatePlaylist();
+      }
+    }
+    
+    // Auth Modal - Login
+    const authModal = document.getElementById('authModal');
+    if (authModal && authModal.style.display === 'flex') {
+      const loginTab = document.getElementById('loginTab');
+      const signupTab = document.getElementById('signupTab');
+      
+      if (loginTab && loginTab.classList.contains('active')) {
+        // Login form active
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        if (document.activeElement === loginEmail || document.activeElement === loginPassword) {
+          e.preventDefault();
+          handleLogin();
+        }
+      } else if (signupTab && signupTab.classList.contains('active')) {
+        // Signup form active
+        const signupEmail = document.getElementById('signupEmail');
+        const signupPassword = document.getElementById('signupPassword');
+        const signupUsername = document.getElementById('signupUsername');
+        if (document.activeElement === signupEmail || 
+            document.activeElement === signupPassword || 
+            document.activeElement === signupUsername) {
+          e.preventDefault();
+          handleSignup();
+        }
+      }
+    }
+    
+    // Edit Track Modal
+    const editTrackModal = document.getElementById('editTrackModal');
+    if (editTrackModal && editTrackModal.classList.contains('show')) {
+      const inputs = ['editTitle', 'editArtist', 'editAlbum'];
+      if (inputs.some(id => document.activeElement === document.getElementById(id))) {
+        e.preventDefault();
+        saveTrackChanges();
+      }
+    }
+  }
+  
+  // Escape key to close modals
+  if (e.key === 'Escape') {
+    // Close all modals
+    document.querySelectorAll('.modal.show').forEach(modal => {
+      modal.classList.remove('show');
+    });
+    
+    // Close auth modal
+    const authModal = document.getElementById('authModal');
+    if (authModal && authModal.style.display === 'flex') {
+      closeAuthModal();
+    }
+    
+    // Close edit profile modal
+    const editProfileModal = document.getElementById('editProfileModal');
+    if (editProfileModal && editProfileModal.classList.contains('show')) {
+      closeEditProfileModal();
+    }
+  }
+});
+
 </script>
 </body>
 </html>
