@@ -265,7 +265,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',sa
 .search-tab.active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
 .search-input:focus{outline:0;background:var(--bg-tertiary);border-color:var(--accent)}
 .search-input::placeholder{color:var(--text-secondary);opacity:.6}
-.profile-menu{position:relative;z-index:10001}
+.profile-menu{position:relative;z-index:99999999}
 .profile-btn{background:rgba(255,255,255,.08);border:1px solid var(--border-color);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;transition:all .2s;font-weight:600;z-index:10001;position:relative;pointer-events:auto!important}
 .profile-btn:hover{background:rgba(255,255,255,.12);border-color:var(--accent);box-shadow:0 0 20px rgba(var(--accent-rgb),0.6),0 0 40px rgba(var(--accent-rgb),0.3)}
 .dropdown{position:absolute;top:50px;right:0;background:hsla(var(--nav-hue, 210),var(--nav-sat, 40%),var(--nav-light, 20%),0.95);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--border-color);border-radius:8px;min-width:200px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);overflow:hidden}
@@ -1776,15 +1776,6 @@ function generateCompleteTheme(bgColor) {
   // 2. On profile screen but viewing someone else (viewingUserId is set)
   const viewingSomeoneElse = !!(onProfileScreen && viewingUserId);
   const shouldSetAccent = !onProfileScreen || viewingSomeoneElse;
-  
-  // VISIBLE DEBUG
-  if (onProfileScreen) {
-    const debugTheme = document.createElement('div');
-    debugTheme.style.cssText = 'position:fixed;bottom:10px;left:10px;background:orange;color:black;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid black;max-width:250px;margin-bottom:5px;';
-    debugTheme.innerHTML = `generateCompleteTheme #${Date.now() % 10000}:<br>shouldSetAccent: ${shouldSetAccent}<br>finalAccent: ${finalAccent}<br><button onclick="this.remove()">X</button>`;
-    document.body.appendChild(debugTheme);
-    setTimeout(() => debugTheme.remove(), 5000);
-  }
   
   if (shouldSetAccent) {
     document.documentElement.style.setProperty('--accent', finalAccent);
@@ -3793,12 +3784,6 @@ async function viewUserProfile(userId) {
     }
     
     // Now set the banner
-    // DEBUG: Show what we have
-    const profileDebugData = document.createElement('div');
-    profileDebugData.style.cssText = 'position:fixed;top:10px;left:10px;background:red;color:white;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid white;max-width:300px;';
-    profileDebugData.innerHTML = `PROFILE DATA DEBUG:<br>banner_color: ${profile.banner_color || 'NULL'}<br>profile_color: ${profile.profile_color || 'NULL'}<br>background_color: ${profile.background_color || 'NULL'}<br>bannerEl exists: ${!!bannerEl}<br><button onclick="this.parentElement.remove()" style="margin-top:5px;padding:3px 8px;">CLOSE</button>`;
-    document.body.appendChild(profileDebugData);
-    
     let bannerSetPath = 'NONE';
     
     if (profile.banner_color) {
@@ -3824,12 +3809,6 @@ async function viewUserProfile(userId) {
         bannerEl.style.background = '';
         bannerEl.style.backgroundSize = '';
         bannerEl.style.backgroundPosition = '';
-        
-        // IMMEDIATE CHECK
-        const checkBg = document.createElement('div');
-        checkBg.style.cssText = 'position:fixed;top:100px;left:10px;background:green;color:white;padding:10px;z-index:999999;font-size:10px;font-family:monospace;max-width:350px;word-break:break-all;';
-        checkBg.innerHTML = `PATH 3 EXECUTED (glassmorphism)<br>Color: ${profile.banner_color}<br><button onclick="this.parentElement.remove()">X</button>`;
-        document.body.appendChild(checkBg);
       }
       
       // Still use profile_color for the overall theme if available
@@ -3848,12 +3827,6 @@ async function viewUserProfile(userId) {
       bannerEl.style.backgroundPosition = '';
       bannerEl.style.visibility = 'visible';
       bannerEl.style.opacity = '1';
-      
-      // DEBUG
-      const checkBg4 = document.createElement('div');
-      checkBg4.style.cssText = 'position:fixed;top:100px;left:10px;background:purple;color:white;padding:10px;z-index:999999;font-size:10px;font-family:monospace;max-width:350px;';
-      checkBg4.innerHTML = `PATH 4 EXECUTED (glassmorphism)<br>Color: ${profile.profile_color}<br><button onclick="this.remove()">X</button>`;
-      document.body.appendChild(checkBg4);
     } else {
       bannerSetPath = 'PATH 5: default glassmorphism';
       // No custom colors - use default glassmorphism
@@ -3864,9 +3837,6 @@ async function viewUserProfile(userId) {
       bannerEl.style.visibility = 'visible';
       bannerEl.style.opacity = '1';
     }
-    
-    // Show which path was taken
-    profileDebugData.innerHTML += `<br>Banner path: ${bannerSetPath}`;
     
     // Apply the profile color theme to cards/accents
     if (profileColorTheme) {
@@ -3940,22 +3910,6 @@ async function viewUserProfile(userId) {
         break;
       }
     }
-    
-    // Create visible debug for banner - stays for 10 seconds
-    const bannerDebug = document.createElement('div');
-    bannerDebug.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:blue;color:white;padding:20px;z-index:999999;font-size:14px;font-family:monospace;max-width:400px;border:3px solid yellow;';
-    bannerDebug.innerHTML = `
-      <div style="font-weight:bold;margin-bottom:10px;">BANNER DEBUG (viewing profile)</div>
-      Banner element found: ${!!bannerEl}<br>
-      Total child divs: ${allDivs.length}<br>
-      Content div found: ${!!bannerContentDiv}<br>
-      Username: ${displayName}<br>
-      Bio: ${bio || 'No bio yet'}<br>
-      Banner bg: ${bannerEl?.style.background || 'NOT SET'}<br>
-      <button onclick="this.parentElement.remove()" style="margin-top:10px;padding:5px 10px;">CLOSE</button>
-    `;
-    document.body.appendChild(bannerDebug);
-    setTimeout(() => bannerDebug.remove(), 10000);
     
     if (bannerContentDiv) {
       // Force display with !important by adding to inline style
@@ -4446,12 +4400,12 @@ function showScreen(screenName) {
     const profileMenu = document.getElementById('profileMenuContainer');
     profileMenu.style.display = 'block';
     profileMenu.style.pointerEvents = 'auto';
-    profileMenu.style.zIndex = '10001';
+    profileMenu.style.zIndex = '99999999';
     
     const profileBtn = document.getElementById('profileBtn');
     if (profileBtn) {
       profileBtn.style.pointerEvents = 'auto';
-      profileBtn.style.zIndex = '10001';
+      profileBtn.style.zIndex = '99999999';
     }
   }
   
@@ -7414,17 +7368,6 @@ document.addEventListener('visibilitychange', function() {
       
       // Force immediate reflow
       void document.documentElement.offsetHeight;
-      
-      // Show debug
-      let debugEl = document.getElementById('visible-debug');
-      if (!debugEl) {
-        debugEl = document.createElement('div');
-        debugEl.id = 'visible-debug';
-        debugEl.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:white;padding:10px;z-index:999999;font-size:11px;font-family:monospace;border:2px solid red;';
-        document.body.appendChild(debugEl);
-      }
-      debugEl.innerHTML = `TAB SWITCH DEBUG:<br>OnProfile: YES<br>ProfileGlow: ${savedProfileGlowColor}<br>Applied: ${savedProfileGlowColor}<br>Time: ${Date.now()}`;
-      setTimeout(() => { if (debugEl) debugEl.remove(); }, 3000);
       
     } else if (customGlowColor) {
       // Not on profile - set site glow IMMEDIATELY
