@@ -1748,21 +1748,8 @@ function generateCompleteTheme(bgColor) {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
   // Check for profile glow first (if profileCustomization exists), then site glow, then auto
-  // BUT: If viewing someone else, DON'T use our custom glow colors!
-  // VERSION: 2025-12-28-fix-duplicate
-  const viewingSomeoneElse = !!(onProfileScreen && viewingUserId);
-  
-  let activeGlowColor;
-  if (viewingSomeoneElse) {
-    // Viewing someone else - use ONLY their profileCustomization.glowColor if set
-    const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
-    activeGlowColor = profileGlow; // Don't fall back to customGlowColor!
-  } else {
-    // Viewing own profile or not on profile - use our glows
-    const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
-    activeGlowColor = profileGlow || customGlowColor;
-  }
-  
+  const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
+  const activeGlowColor = profileGlow || customGlowColor;
   const finalAccent = activeGlowColor || accent;
   
   // Calculate lightGlow from the ACTUAL accent being used (not background)
@@ -1788,7 +1775,7 @@ function generateCompleteTheme(bgColor) {
   // CRITICAL: Only set accent variables if:
   // 1. NOT on profile screen at all, OR
   // 2. On profile screen but viewing someone else (viewingUserId is set)
-  // viewingSomeoneElse already declared above
+  const viewingSomeoneElse = !!(onProfileScreen && viewingUserId);
   const shouldSetAccent = !onProfileScreen || viewingSomeoneElse;
   
   if (shouldSetAccent) {
@@ -4515,6 +4502,13 @@ function showScreen(screenName) {
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      
+      // Show visual confirmation
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
+      msg.textContent = 'Restored site glow: ' + customGlowColor;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 2000);
     } else {
       console.log('🔄 No custom site glow, using auto');
       // Reset to default white text on accent
@@ -4620,18 +4614,10 @@ function showScreen(screenName) {
           console.log('✨ Restored profile glow:', savedProfileGlowColor);
         }
         
-        // CRITICAL: Re-apply the CORRECT glow based on which screen we're on
-        const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-        
-        // If on profile screen, use profile glow (if set), else use site glow
-        // If NOT on profile screen (e.g., home), ONLY use site glow
-        let activeGlow;
-        if (onProfileScreen) {
-          activeGlow = savedProfileGlowColor || customGlowColor;
-        } else {
-          // NOT on profile screen - use ONLY site-wide glow
-          activeGlow = customGlowColor;
-        }
+        // CRITICAL: Re-apply the CORRECT glow based on current screen
+        // If we just returned to profile screen, use profile glow, otherwise use site glow
+        const currentlyOnProfile = document.getElementById('profileScreen')?.classList.contains('active');
+        const activeGlow = currentlyOnProfile ? (savedProfileGlowColor || customGlowColor) : customGlowColor;
         
         if (activeGlow) {
           const textColor = getContrastColor(activeGlow);
@@ -4643,7 +4629,7 @@ function showScreen(screenName) {
           document.documentElement.style.setProperty('--accent-text', textColor);
           document.documentElement.style.setProperty('--accent-light', lightGlow);
           document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-          console.log('✅ Re-applied glow to CSS:', activeGlow, '(onProfile:', onProfileScreen + ')');
+          console.log('✅ Re-applied glow to CSS:', activeGlow);
         } else {
           // No custom glow - regenerate from theme
           generateCompleteTheme(window.originalProfileData.siteTheme || document.body.style.backgroundColor || '#050d1a');
@@ -7579,13 +7565,7 @@ accentWatcher.observe(document.documentElement, { attributes: true, attributeFil
 setInterval(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
-  // CRITICAL: Don't auto-restore if we're viewing someone else's profile
-  if (viewingUserId) {
-    // Viewing someone else - don't restore our glow
-    return;
-  }
-  
-  // If on OWN profile screen, restore profile glow
+  // If on profile screen, restore profile glow
   if (onProfileScreen && savedProfileGlowColor) {
     if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
       profileCustomization.glowColor = savedProfileGlowColor;
