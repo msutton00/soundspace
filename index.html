@@ -3686,6 +3686,12 @@ async function viewUserProfile(userId) {
     // Set viewing state
     viewingUserId = userId;
     
+    // CRITICAL FOR BRAVE: Disconnect the aggressive MutationObserver
+    if (window.accentWatcher) {
+      window.accentWatcher.disconnect();
+      console.log('🛑 Disconnected MutationObserver - viewing someone else');
+    }
+    
     // IMPORTANT: Store original profile data AND site theme BEFORE modifying anything
     if (!window.originalProfileData) {
       const usernameEl = document.getElementById('profileUsername');
@@ -4518,6 +4524,12 @@ function showScreen(screenName) {
     window.profileBackgroundLocked = false;
     window.viewingUserProfileData = null; // Clear viewed user data
     viewingUserId = null; // Clear viewing state
+    
+    // CRITICAL FOR BRAVE: Reconnect the MutationObserver
+    if (window.accentWatcher) {
+      window.accentWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+      console.log('✅ Reconnected MutationObserver');
+    }
     
     // CRITICAL: Clear profile glow so site glow can be used
     profileCustomization.glowColor = null;
@@ -7574,7 +7586,7 @@ document.addEventListener('visibilitychange', function() {
 }, true); // Use capture = true to run BEFORE other handlers
 
 // NUCLEAR OPTION: Watch for ANY changes to --accent and override if on profile
-const accentWatcher = new MutationObserver(() => {
+window.accentWatcher = new MutationObserver(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   // CRITICAL: Don't override if viewing someone else!
   if (onProfileScreen && savedProfileGlowColor && !viewingUserId) {
@@ -7592,7 +7604,7 @@ const accentWatcher = new MutationObserver(() => {
     }
   }
 });
-accentWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+window.accentWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
 
 // FINAL OVERRIDE - Must be at end to override minified code
 // This ensures siteBackgroundColor, customGlowColor, and playlists are ALWAYS restored
