@@ -3954,6 +3954,11 @@ async function viewUserProfile(userId) {
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
+      // BRAVE FIX: Force style recalculation
+      document.documentElement.style.display = 'none';
+      document.documentElement.offsetHeight; // Trigger reflow
+      document.documentElement.style.display = '';
+      
       // DEBUG: Show what we just set
       document.title = `SET GLOW: ${profile.profile_glow_color} | profCust: ${profileCustomization.glowColor}`;
       
