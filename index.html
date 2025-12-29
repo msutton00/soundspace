@@ -4109,35 +4109,33 @@ async function viewUserProfile(userId) {
     const finalAccent = document.documentElement.style.getPropertyValue('--accent');
     document.title = `FINAL: ${finalAccent} | VIEWING: ${userId.substring(0,8)}`;
     
-    // BRAVE FIX: Force their glow AGAIN after a delay to override whatever is changing it
+    // BRAVE FIX: Keep re-applying their glow every 100ms while viewing
     if (profile.profile_glow_color) {
-      setTimeout(() => {
-        const textColor = getContrastColor(profile.profile_glow_color);
-        const rgb = hexToRgb(profile.profile_glow_color);
-        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-        const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
-        
-        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
-        document.documentElement.style.setProperty('--accent-text', textColor);
-        document.documentElement.style.setProperty('--accent-light', lightGlow);
-        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-        
-        document.title = `DELAYED SET: ${profile.profile_glow_color}`;
-      }, 1000);
+      const theirGlow = profile.profile_glow_color;
+      const theirTextColor = getContrastColor(theirGlow);
+      const theirRgb = hexToRgb(theirGlow);
+      const theirHsl = rgbToHsl(theirRgb.r, theirRgb.g, theirRgb.b);
+      const theirLightGlow = hslToHex(theirHsl.h, Math.min(theirHsl.s * 1.3, 100), Math.min(theirHsl.l * 1.5, 90));
       
-      setTimeout(() => {
-        const textColor = getContrastColor(profile.profile_glow_color);
-        const rgb = hexToRgb(profile.profile_glow_color);
-        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-        const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+      // Clear any existing interval
+      if (window.braveGlowFix) clearInterval(window.braveGlowFix);
+      
+      window.braveGlowFix = setInterval(() => {
+        // Only run while viewing this user
+        if (!window.VIEWING_USER_ID) {
+          clearInterval(window.braveGlowFix);
+          return;
+        }
         
-        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
-        document.documentElement.style.setProperty('--accent-text', textColor);
-        document.documentElement.style.setProperty('--accent-light', lightGlow);
-        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+        // Force their glow
+        document.documentElement.style.setProperty('--accent', theirGlow);
+        document.documentElement.style.setProperty('--accent-text', theirTextColor);
+        document.documentElement.style.setProperty('--accent-light', theirLightGlow);
+        document.documentElement.style.setProperty('--accent-rgb', `${theirRgb.r},${theirRgb.g},${theirRgb.b}`);
         
-        document.title = `DELAYED SET 2: ${profile.profile_glow_color}`;
-      }, 2000);
+        // Update title to show it's working
+        document.title = `FORCING: ${theirGlow} | VIEWING: ${userId.substring(0,8)}`;
+      }, 100); // Re-apply every 100ms to fight whatever is changing it
     }
     
   } catch (err) {
@@ -4587,6 +4585,12 @@ function showScreen(screenName) {
     viewingUserId = null; // Clear viewing state
     window.VIEWING_USER_ID = null; // Clear backup
     window.VIEWING_USER_GLOW = null; // Clear glow backup
+    
+    // Clear Brave glow fix interval
+    if (window.braveGlowFix) {
+      clearInterval(window.braveGlowFix);
+      window.braveGlowFix = null;
+    }
     
     // NUCLEAR: Restart the interval
     if (!window.glowRestoreInterval) {
