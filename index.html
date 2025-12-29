@@ -3946,6 +3946,9 @@ async function viewUserProfile(userId) {
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
+      // DEBUG: Show what we just set
+      document.title = `SET GLOW: ${profile.profile_glow_color} | profCust: ${profileCustomization.glowColor}`;
+      
       // FORCE CSS VARIABLES MULTIPLE TIMES (Brave fix)
       setTimeout(() => {
         document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
@@ -4084,6 +4087,10 @@ async function viewUserProfile(userId) {
     
     // Update follower/following counts
     await updateFollowerCounts(userId);
+    
+    // FINAL DEBUG: Show what CSS actually has
+    const finalAccent = document.documentElement.style.getPropertyValue('--accent');
+    document.title = `FINAL: ${finalAccent} | VIEWING: ${userId.substring(0,8)}`;
     
   } catch (err) {
     console.error('Error loading user profile:', err);
