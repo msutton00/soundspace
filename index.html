@@ -1752,6 +1752,9 @@ function generateCompleteTheme(bgColor) {
   const activeGlowColor = profileGlow || customGlowColor;
   const finalAccent = activeGlowColor || accent;
   
+  // DEBUG: Show what's being used in page title
+  document.title = `GLOW: ${finalAccent} | PROF: ${profileGlow} | CUSTOM: ${customGlowColor}`;
+  
   // Calculate lightGlow from the ACTUAL accent being used (not background)
   let lightGlow;
   if (activeGlowColor) {
