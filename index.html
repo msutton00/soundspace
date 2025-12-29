@@ -4092,6 +4092,37 @@ async function viewUserProfile(userId) {
     const finalAccent = document.documentElement.style.getPropertyValue('--accent');
     document.title = `FINAL: ${finalAccent} | VIEWING: ${userId.substring(0,8)}`;
     
+    // BRAVE FIX: Force their glow AGAIN after a delay to override whatever is changing it
+    if (profile.profile_glow_color) {
+      setTimeout(() => {
+        const textColor = getContrastColor(profile.profile_glow_color);
+        const rgb = hexToRgb(profile.profile_glow_color);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+        
+        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
+        document.documentElement.style.setProperty('--accent-text', textColor);
+        document.documentElement.style.setProperty('--accent-light', lightGlow);
+        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+        
+        document.title = `DELAYED SET: ${profile.profile_glow_color}`;
+      }, 1000);
+      
+      setTimeout(() => {
+        const textColor = getContrastColor(profile.profile_glow_color);
+        const rgb = hexToRgb(profile.profile_glow_color);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+        
+        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
+        document.documentElement.style.setProperty('--accent-text', textColor);
+        document.documentElement.style.setProperty('--accent-light', lightGlow);
+        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+        
+        document.title = `DELAYED SET 2: ${profile.profile_glow_color}`;
+      }, 2000);
+    }
+    
   } catch (err) {
     console.error('Error loading user profile:', err);
     alert('Error loading user profile');
