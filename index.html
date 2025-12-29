@@ -1748,8 +1748,21 @@ function generateCompleteTheme(bgColor) {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
   // Check for profile glow first (if profileCustomization exists), then site glow, then auto
-  const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
-  const activeGlowColor = profileGlow || customGlowColor;
+  // BUT: If viewing someone else, DON'T use our custom glow colors!
+  // VERSION: 2025-12-28-fix-duplicate
+  const viewingSomeoneElse = !!(onProfileScreen && viewingUserId);
+  
+  let activeGlowColor;
+  if (viewingSomeoneElse) {
+    // Viewing someone else - use ONLY their profileCustomization.glowColor if set
+    const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
+    activeGlowColor = profileGlow; // Don't fall back to customGlowColor!
+  } else {
+    // Viewing own profile or not on profile - use our glows
+    const profileGlow = (typeof profileCustomization !== 'undefined') ? profileCustomization.glowColor : null;
+    activeGlowColor = profileGlow || customGlowColor;
+  }
+  
   const finalAccent = activeGlowColor || accent;
   
   // Calculate lightGlow from the ACTUAL accent being used (not background)
@@ -1775,7 +1788,7 @@ function generateCompleteTheme(bgColor) {
   // CRITICAL: Only set accent variables if:
   // 1. NOT on profile screen at all, OR
   // 2. On profile screen but viewing someone else (viewingUserId is set)
-  const viewingSomeoneElse = !!(onProfileScreen && viewingUserId);
+  // viewingSomeoneElse already declared above
   const shouldSetAccent = !onProfileScreen || viewingSomeoneElse;
   
   if (shouldSetAccent) {
