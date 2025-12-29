@@ -3924,6 +3924,16 @@ async function viewUserProfile(userId) {
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      
+      // VISUAL INDICATOR
+      let indicator = document.getElementById('glowIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'glowIndicator';
+        indicator.style.cssText = 'position:fixed;top:80px;left:10px;background:black;color:white;padding:8px;border-radius:4px;z-index:999999;font-size:11px;font-family:monospace;';
+        document.body.appendChild(indicator);
+      }
+      indicator.innerHTML = `VIEWING: ${profile.username}<br>GLOW: ${profile.profile_glow_color}<br>CSS: ${document.documentElement.style.getPropertyValue('--accent')}`;
     } else {
       console.log('⚠️ Viewed user has no profile glow set');
       // Clear profile glow so their background theme glow shows
@@ -4503,12 +4513,15 @@ function showScreen(screenName) {
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
-      // Show visual confirmation
-      const msg = document.createElement('div');
-      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
-      msg.textContent = 'Restored site glow: ' + customGlowColor;
-      document.body.appendChild(msg);
-      setTimeout(() => msg.remove(), 2000);
+      // Update visual indicator
+      let indicator = document.getElementById('glowIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'glowIndicator';
+        indicator.style.cssText = 'position:fixed;top:80px;left:10px;background:black;color:white;padding:8px;border-radius:4px;z-index:999999;font-size:11px;font-family:monospace;';
+        document.body.appendChild(indicator);
+      }
+      indicator.innerHTML = `HOME/LIBRARY<br>SITE GLOW: ${customGlowColor}<br>CSS: ${document.documentElement.style.getPropertyValue('--accent')}`;
     } else {
       console.log('🔄 No custom site glow, using auto');
       // Reset to default white text on accent
