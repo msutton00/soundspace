@@ -3905,12 +3905,20 @@ async function viewUserProfile(userId) {
     // Apply the profile color theme to cards/accents
     if (profileColorTheme) {
       console.log('🎨 Applying profile color theme:', profileColorTheme);
+      
+      // CRITICAL FOR BRAVE: Set their profile glow BEFORE calling generateCompleteTheme
+      if (profile.profile_glow_color) {
+        console.log('✨ PRE-SETTING viewed user profile glow:', profile.profile_glow_color);
+        profileCustomization.glowColor = profile.profile_glow_color;
+      }
+      
       generateCompleteTheme(profileColorTheme);
     }
     
     // APPLY THEIR PROFILE GLOW (if they have one set)
+    // Do this AGAIN after generateCompleteTheme to ensure it sticks
     if (profile.profile_glow_color) {
-      console.log('✨ Applying viewed user profile glow:', profile.profile_glow_color);
+      console.log('✨ RE-APPLYING viewed user profile glow:', profile.profile_glow_color);
       
       // Set their profile glow as active
       profileCustomization.glowColor = profile.profile_glow_color;
@@ -3920,6 +3928,7 @@ async function viewUserProfile(userId) {
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
       const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
       
+      // Set CSS variables with !important won't work in setProperty, so set multiple times
       document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
