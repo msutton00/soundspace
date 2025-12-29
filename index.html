@@ -7576,6 +7576,7 @@ document.addEventListener('visibilitychange', function() {
 // NUCLEAR OPTION: Watch for ANY changes to --accent and override if on profile
 const accentWatcher = new MutationObserver(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
+  // CRITICAL: Don't override if viewing someone else!
   if (onProfileScreen && savedProfileGlowColor && !viewingUserId) {
     const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
     if (currentAccent && currentAccent !== savedProfileGlowColor) {
@@ -7599,7 +7600,12 @@ accentWatcher.observe(document.documentElement, { attributes: true, attributeFil
 setInterval(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
-  // If on profile screen, restore profile glow
+  // CRITICAL: Don't restore if viewing someone else!
+  if (viewingUserId) {
+    return; // Viewing someone else - don't touch glows
+  }
+  
+  // If on OWN profile screen, restore profile glow
   if (onProfileScreen && savedProfileGlowColor) {
     if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
       profileCustomization.glowColor = savedProfileGlowColor;
