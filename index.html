@@ -4502,13 +4502,6 @@ function showScreen(screenName) {
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      
-      // Show visual confirmation
-      const msg = document.createElement('div');
-      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
-      msg.textContent = 'Restored site glow: ' + customGlowColor;
-      document.body.appendChild(msg);
-      setTimeout(() => msg.remove(), 2000);
     } else {
       console.log('🔄 No custom site glow, using auto');
       // Reset to default white text on accent
