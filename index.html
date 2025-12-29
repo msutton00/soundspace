@@ -3689,8 +3689,10 @@ async function viewUserProfile(userId) {
       return;
     }
     
-    // Set viewing state
+    // Set viewing state - store in TWO places for Brave
     viewingUserId = userId;
+    window.VIEWING_USER_ID = userId; // Backup that can't be cleared
+    window.VIEWING_USER_GLOW = profile.profile_glow_color; // Store their glow too
     
     // CRITICAL FOR BRAVE: Disconnect the aggressive MutationObserver
     if (window.accentWatcher) {
@@ -4568,6 +4570,8 @@ function showScreen(screenName) {
     window.profileBackgroundLocked = false;
     window.viewingUserProfileData = null; // Clear viewed user data
     viewingUserId = null; // Clear viewing state
+    window.VIEWING_USER_ID = null; // Clear backup
+    window.VIEWING_USER_GLOW = null; // Clear glow backup
     
     // CRITICAL FOR BRAVE: Reconnect the MutationObserver
     if (window.accentWatcher) {
@@ -7632,8 +7636,9 @@ document.addEventListener('visibilitychange', function() {
 // NUCLEAR OPTION: Watch for ANY changes to --accent and override if on profile
 window.accentWatcher = new MutationObserver(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-  // CRITICAL: Don't override if viewing someone else!
-  if (onProfileScreen && savedProfileGlowColor && !viewingUserId) {
+  // CRITICAL: Don't override if viewing someone else! Check BOTH variables
+  const isViewingOther = viewingUserId || window.VIEWING_USER_ID;
+  if (onProfileScreen && savedProfileGlowColor && !isViewingOther) {
     const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
     if (currentAccent && currentAccent !== savedProfileGlowColor) {
       // Someone changed it - change it back!
@@ -7656,8 +7661,9 @@ window.accentWatcher.observe(document.documentElement, { attributes: true, attri
 setInterval(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
-  // CRITICAL: Don't restore if viewing someone else!
-  if (viewingUserId) {
+  // CRITICAL: Don't restore if viewing someone else! Check BOTH variables
+  const isViewingOther = viewingUserId || window.VIEWING_USER_ID;
+  if (isViewingOther) {
     return; // Viewing someone else - don't touch glows
   }
   
