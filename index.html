@@ -7566,7 +7566,13 @@ accentWatcher.observe(document.documentElement, { attributes: true, attributeFil
 setInterval(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
-  // If on profile screen, restore profile glow
+  // CRITICAL: Don't auto-restore if we're viewing someone else's profile
+  if (viewingUserId) {
+    // Viewing someone else - don't restore our glow
+    return;
+  }
+  
+  // If on OWN profile screen, restore profile glow
   if (onProfileScreen && savedProfileGlowColor) {
     if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
       profileCustomization.glowColor = savedProfileGlowColor;
