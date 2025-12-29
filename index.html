@@ -3925,9 +3925,36 @@ async function viewUserProfile(userId) {
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
+      // FORCE CSS VARIABLES MULTIPLE TIMES (Brave fix)
+      setTimeout(() => {
+        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
+        document.documentElement.style.setProperty('--accent-text', textColor);
+        document.documentElement.style.setProperty('--accent-light', lightGlow);
+        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      }, 50);
+      
+      setTimeout(() => {
+        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
+        document.documentElement.style.setProperty('--accent-text', textColor);
+        document.documentElement.style.setProperty('--accent-light', lightGlow);
+        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      }, 200);
+      
+      setTimeout(() => {
+        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
+        document.documentElement.style.setProperty('--accent-text', textColor);
+        document.documentElement.style.setProperty('--accent-light', lightGlow);
+        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+      }, 500);
+      
       // VISUAL INDICATOR - Set via basspace title
-      document.querySelector('.logo').textContent = `basspace [VIEWING: ${profile.username.substring(0,8)}... GLOW: ${profile.profile_glow_color}]`;
-      document.querySelector('.logo').style.fontSize = '0.7rem';
+      setTimeout(() => {
+        const logo = document.querySelector('.logo');
+        if (logo) {
+          logo.textContent = `basspace [VIEWING: ${profile.username.substring(0,8)}... GLOW: ${profile.profile_glow_color}]`;
+          logo.style.fontSize = '0.7rem';
+        }
+      }, 100);
     } else {
       console.log('⚠️ Viewed user has no profile glow set');
       // Clear profile glow so their background theme glow shows
