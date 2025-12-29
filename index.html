@@ -3694,6 +3694,12 @@ async function viewUserProfile(userId) {
     window.VIEWING_USER_ID = userId; // Backup that can't be cleared
     window.VIEWING_USER_GLOW = profile.profile_glow_color; // Store their glow too
     
+    // NUCLEAR: Clear the interval completely
+    if (window.glowRestoreInterval) {
+      clearInterval(window.glowRestoreInterval);
+      console.log('🛑 CLEARED interval');
+    }
+    
     // CRITICAL FOR BRAVE: Disconnect the aggressive MutationObserver
     if (window.accentWatcher) {
       window.accentWatcher.disconnect();
@@ -4572,6 +4578,45 @@ function showScreen(screenName) {
     viewingUserId = null; // Clear viewing state
     window.VIEWING_USER_ID = null; // Clear backup
     window.VIEWING_USER_GLOW = null; // Clear glow backup
+    
+    // NUCLEAR: Restart the interval
+    if (!window.glowRestoreInterval) {
+      window.glowRestoreInterval = setInterval(() => {
+        const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
+        const isViewingOther = viewingUserId || window.VIEWING_USER_ID;
+        if (isViewingOther) return;
+        
+        if (onProfileScreen && savedProfileGlowColor) {
+          if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
+            profileCustomization.glowColor = savedProfileGlowColor;
+            const textColor = getContrastColor(savedProfileGlowColor);
+            const rgb = hexToRgb(savedProfileGlowColor);
+            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+            const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+            document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
+            document.documentElement.style.setProperty('--accent-text', textColor);
+            document.documentElement.style.setProperty('--accent-light', lightGlow);
+            document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+          }
+          return;
+        }
+        
+        if (customGlowColor && !profileCustomization.glowColor) {
+          const currentAccent = document.documentElement.style.getPropertyValue('--accent');
+          if (currentAccent !== customGlowColor) {
+            const textColor = getContrastColor(customGlowColor);
+            const rgb = hexToRgb(customGlowColor);
+            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+            const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
+            document.documentElement.style.setProperty('--accent', customGlowColor);
+            document.documentElement.style.setProperty('--accent-text', textColor);
+            document.documentElement.style.setProperty('--accent-light', lightGlow);
+            document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
+          }
+        }
+      }, 1000);
+      console.log('✅ RESTARTED interval');
+    }
     
     // CRITICAL FOR BRAVE: Reconnect the MutationObserver
     if (window.accentWatcher) {
@@ -7658,7 +7703,7 @@ window.accentWatcher.observe(document.documentElement, { attributes: true, attri
 // FINAL OVERRIDE - Must be at end to override minified code
 // This ensures siteBackgroundColor, customGlowColor, and playlists are ALWAYS restored
 // Auto-restore interval - checks every second
-setInterval(() => {
+window.glowRestoreInterval = setInterval(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
   // CRITICAL: Don't restore if viewing someone else! Check BOTH variables
