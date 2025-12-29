@@ -4614,11 +4614,8 @@ function showScreen(screenName) {
           console.log('✨ Restored profile glow:', savedProfileGlowColor);
         }
         
-        // CRITICAL: Re-apply the CORRECT glow based on current screen
-        // If we just returned to profile screen, use profile glow, otherwise use site glow
-        const currentlyOnProfile = document.getElementById('profileScreen')?.classList.contains('active');
-        const activeGlow = currentlyOnProfile ? (savedProfileGlowColor || customGlowColor) : customGlowColor;
-        
+        // CRITICAL: Re-apply the glow to CSS variables
+        const activeGlow = savedProfileGlowColor || customGlowColor;
         if (activeGlow) {
           const textColor = getContrastColor(activeGlow);
           const rgb = hexToRgb(activeGlow);
