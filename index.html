@@ -3959,8 +3959,12 @@ async function viewUserProfile(userId) {
       document.documentElement.offsetHeight; // Trigger reflow
       document.documentElement.style.display = '';
       
-      // DEBUG: Show what we just set
-      document.title = `SET GLOW: ${profile.profile_glow_color} | profCust: ${profileCustomization.glowColor}`;
+      // Show what CSS actually has RIGHT NOW
+      const actualAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      const setAccent = document.documentElement.style.getPropertyValue('--accent').trim();
+      
+      // DEBUG: Show on page
+      document.title = `COMPUTED: ${actualAccent} | SET: ${setAccent} | SHOULD BE: ${profile.profile_glow_color}`;
       
       // FORCE CSS VARIABLES MULTIPLE TIMES (Brave fix)
       setTimeout(() => {
