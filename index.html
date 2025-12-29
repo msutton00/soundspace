@@ -3647,6 +3647,9 @@ function getTimeAgo(date) {
 async function viewUserProfile(userId) {
   if (!userId) return;
   
+  // UNMISSABLE TEST - Change page title
+  document.title = `VIEWING USER: ${userId}`;
+  
   // CRITICAL: Lock the background to prevent any changes while viewing this profile
   window.profileBackgroundLocked = true;
   
