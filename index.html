@@ -3694,6 +3694,20 @@ async function viewUserProfile(userId) {
     window.VIEWING_USER_ID = userId; // Backup that can't be cleared
     window.VIEWING_USER_GLOW = profile.profile_glow_color; // Store their glow too
     
+    // CREATE DEBUG BOX IMMEDIATELY
+    let debugBox = document.getElementById('braveDebugBox');
+    if (!debugBox) {
+      debugBox = document.createElement('div');
+      debugBox.id = 'braveDebugBox';
+      debugBox.style.cssText = 'position:fixed;top:100px;left:10px;background:red;color:white;padding:15px;border:5px solid yellow;border-radius:8px;z-index:999999999;font-family:monospace;font-size:16px;';
+      document.body.appendChild(debugBox);
+    }
+    debugBox.innerHTML = `
+      <div><strong>DEBUG BOX CREATED</strong></div>
+      <div>viewingUserId: ${userId}</div>
+      <div>Their glow: ${profile.profile_glow_color}</div>
+    `;
+    
     // NUCLEAR: Clear the interval completely
     if (window.glowRestoreInterval) {
       clearInterval(window.glowRestoreInterval);
