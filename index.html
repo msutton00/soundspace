@@ -1752,9 +1752,6 @@ function generateCompleteTheme(bgColor) {
   const activeGlowColor = profileGlow || customGlowColor;
   const finalAccent = activeGlowColor || accent;
   
-  // DEBUG: Show what's being used in page title
-  document.title = `GLOW: ${finalAccent} | PROF: ${profileGlow} | CUSTOM: ${customGlowColor}`;
-  
   // Calculate lightGlow from the ACTUAL accent being used (not background)
   let lightGlow;
   if (activeGlowColor) {
@@ -3650,9 +3647,6 @@ function getTimeAgo(date) {
 async function viewUserProfile(userId) {
   if (!userId) return;
   
-  // UNMISSABLE TEST - Change page title
-  document.title = `VIEWING USER: ${userId}`;
-  
   // CRITICAL: Lock the background to prevent any changes while viewing this profile
   window.profileBackgroundLocked = true;
   
@@ -3689,39 +3683,8 @@ async function viewUserProfile(userId) {
       return;
     }
     
-    // Set viewing state - store in TWO places for Brave
+    // Set viewing state
     viewingUserId = userId;
-    window.VIEWING_USER_ID = userId; // Backup that can't be cleared
-    window.VIEWING_USER_GLOW = profile.profile_glow_color; // Store their glow too
-    
-    // ALERT TEST - Can't be blocked
-    alert(`BRAVE TEST:\nViewing: ${userId}\nTheir glow: ${profile.profile_glow_color}\nYour glow: ${customGlowColor}`);
-    
-    // CREATE DEBUG BOX IMMEDIATELY
-    let debugBox = document.getElementById('braveDebugBox');
-    if (!debugBox) {
-      debugBox = document.createElement('div');
-      debugBox.id = 'braveDebugBox';
-      debugBox.style.cssText = 'position:fixed;top:100px;left:10px;background:red;color:white;padding:15px;border:5px solid yellow;border-radius:8px;z-index:999999999;font-family:monospace;font-size:16px;';
-      document.body.appendChild(debugBox);
-    }
-    debugBox.innerHTML = `
-      <div><strong>DEBUG BOX CREATED</strong></div>
-      <div>viewingUserId: ${userId}</div>
-      <div>Their glow: ${profile.profile_glow_color}</div>
-    `;
-    
-    // NUCLEAR: Clear the interval completely
-    if (window.glowRestoreInterval) {
-      clearInterval(window.glowRestoreInterval);
-      console.log('🛑 CLEARED interval');
-    }
-    
-    // CRITICAL FOR BRAVE: Disconnect the aggressive MutationObserver
-    if (window.accentWatcher) {
-      window.accentWatcher.disconnect();
-      console.log('🛑 Disconnected MutationObserver - viewing someone else');
-    }
     
     // IMPORTANT: Store original profile data AND site theme BEFORE modifying anything
     if (!window.originalProfileData) {
@@ -3942,20 +3905,12 @@ async function viewUserProfile(userId) {
     // Apply the profile color theme to cards/accents
     if (profileColorTheme) {
       console.log('🎨 Applying profile color theme:', profileColorTheme);
-      
-      // CRITICAL FOR BRAVE: Set their profile glow BEFORE calling generateCompleteTheme
-      if (profile.profile_glow_color) {
-        console.log('✨ PRE-SETTING viewed user profile glow:', profile.profile_glow_color);
-        profileCustomization.glowColor = profile.profile_glow_color;
-      }
-      
       generateCompleteTheme(profileColorTheme);
     }
     
     // APPLY THEIR PROFILE GLOW (if they have one set)
-    // Do this AGAIN after generateCompleteTheme to ensure it sticks
     if (profile.profile_glow_color) {
-      console.log('✨ RE-APPLYING viewed user profile glow:', profile.profile_glow_color);
+      console.log('✨ Applying viewed user profile glow:', profile.profile_glow_color);
       
       // Set their profile glow as active
       profileCustomization.glowColor = profile.profile_glow_color;
@@ -3965,54 +3920,10 @@ async function viewUserProfile(userId) {
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
       const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
       
-      // Set CSS variables with !important won't work in setProperty, so set multiple times
       document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
       document.documentElement.style.setProperty('--accent-text', textColor);
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      
-      // BRAVE FIX: Force style recalculation
-      document.documentElement.style.display = 'none';
-      document.documentElement.offsetHeight; // Trigger reflow
-      document.documentElement.style.display = '';
-      
-      // Show what CSS actually has RIGHT NOW
-      const actualAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-      const setAccent = document.documentElement.style.getPropertyValue('--accent').trim();
-      
-      // DEBUG: Show on page
-      document.title = `COMPUTED: ${actualAccent} | SET: ${setAccent} | SHOULD BE: ${profile.profile_glow_color}`;
-      
-      // FORCE CSS VARIABLES MULTIPLE TIMES (Brave fix)
-      setTimeout(() => {
-        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
-        document.documentElement.style.setProperty('--accent-text', textColor);
-        document.documentElement.style.setProperty('--accent-light', lightGlow);
-        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      }, 50);
-      
-      setTimeout(() => {
-        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
-        document.documentElement.style.setProperty('--accent-text', textColor);
-        document.documentElement.style.setProperty('--accent-light', lightGlow);
-        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      }, 200);
-      
-      setTimeout(() => {
-        document.documentElement.style.setProperty('--accent', profile.profile_glow_color);
-        document.documentElement.style.setProperty('--accent-text', textColor);
-        document.documentElement.style.setProperty('--accent-light', lightGlow);
-        document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-      }, 500);
-      
-      // VISUAL INDICATOR - Set via basspace title
-      setTimeout(() => {
-        const logo = document.querySelector('.logo');
-        if (logo) {
-          logo.textContent = `basspace [VIEWING: ${profile.username.substring(0,8)}... GLOW: ${profile.profile_glow_color}]`;
-          logo.style.fontSize = '0.7rem';
-        }
-      }, 100);
     } else {
       console.log('⚠️ Viewed user has no profile glow set');
       // Clear profile glow so their background theme glow shows
@@ -4121,58 +4032,6 @@ async function viewUserProfile(userId) {
     
     // Update follower/following counts
     await updateFollowerCounts(userId);
-    
-    // FINAL DEBUG: Show what CSS actually has
-    const finalAccent = document.documentElement.style.getPropertyValue('--accent');
-    document.title = `FINAL: ${finalAccent} | VIEWING: ${userId.substring(0,8)}`;
-    
-    // BRAVE FIX: Keep re-applying their glow every 100ms while viewing
-    if (profile.profile_glow_color) {
-      const theirGlow = profile.profile_glow_color;
-      const theirTextColor = getContrastColor(theirGlow);
-      const theirRgb = hexToRgb(theirGlow);
-      const theirHsl = rgbToHsl(theirRgb.r, theirRgb.g, theirRgb.b);
-      const theirLightGlow = hslToHex(theirHsl.h, Math.min(theirHsl.s * 1.3, 100), Math.min(theirHsl.l * 1.5, 90));
-      
-      // Clear any existing interval
-      if (window.braveGlowFix) clearInterval(window.braveGlowFix);
-      
-      window.braveGlowFix = setInterval(() => {
-        // Only run while viewing this user
-        if (!window.VIEWING_USER_ID) {
-          clearInterval(window.braveGlowFix);
-          return;
-        }
-        
-        // BRAVE FIX: Use setAttribute which Brave may handle better than setProperty
-        const currentStyle = document.documentElement.getAttribute('style') || '';
-        const newStyle = `--accent: ${theirGlow}; --accent-text: ${theirTextColor}; --accent-light: ${theirLightGlow}; --accent-rgb: ${theirRgb.r},${theirRgb.g},${theirRgb.b};`;
-        
-        if (!currentStyle.includes(theirGlow)) {
-          document.documentElement.setAttribute('style', newStyle);
-        }
-        
-        // Create visible debug box
-        let debugBox = document.getElementById('braveDebugBox');
-        if (!debugBox) {
-          debugBox = document.createElement('div');
-          debugBox.id = 'braveDebugBox';
-          debugBox.style.cssText = 'position:fixed;top:100px;left:10px;background:black;color:white;padding:15px;border:3px solid yellow;border-radius:8px;z-index:999999999;font-family:monospace;font-size:14px;max-width:400px;';
-          document.body.appendChild(debugBox);
-        }
-        
-        const actualAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-        const setAccent = document.documentElement.style.getPropertyValue('--accent').trim();
-        debugBox.innerHTML = `
-          <div style="margin-bottom:10px;"><strong>BRAVE DEBUG:</strong></div>
-          <div>TRYING TO SET: <span style="color:${theirGlow}">${theirGlow}</span></div>
-          <div>STYLE ATTR HAS: <span style="color:${setAccent}">${setAccent}</span></div>
-          <div>COMPUTED VALUE: <span style="color:${actualAccent}">${actualAccent}</span></div>
-          <div>viewingUserId: ${viewingUserId}</div>
-          <div>VIEWING_USER_ID: ${window.VIEWING_USER_ID}</div>
-        `;
-      }, 100);
-    }
     
   } catch (err) {
     console.error('Error loading user profile:', err);
@@ -4619,63 +4478,6 @@ function showScreen(screenName) {
     window.profileBackgroundLocked = false;
     window.viewingUserProfileData = null; // Clear viewed user data
     viewingUserId = null; // Clear viewing state
-    window.VIEWING_USER_ID = null; // Clear backup
-    window.VIEWING_USER_GLOW = null; // Clear glow backup
-    
-    // Clear Brave glow fix interval
-    if (window.braveGlowFix) {
-      clearInterval(window.braveGlowFix);
-      window.braveGlowFix = null;
-    }
-    
-    // Remove debug box
-    const debugBox = document.getElementById('braveDebugBox');
-    if (debugBox) debugBox.remove();
-    
-    // NUCLEAR: Restart the interval
-    if (!window.glowRestoreInterval) {
-      window.glowRestoreInterval = setInterval(() => {
-        const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-        const isViewingOther = viewingUserId || window.VIEWING_USER_ID;
-        if (isViewingOther) return;
-        
-        if (onProfileScreen && savedProfileGlowColor) {
-          if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
-            profileCustomization.glowColor = savedProfileGlowColor;
-            const textColor = getContrastColor(savedProfileGlowColor);
-            const rgb = hexToRgb(savedProfileGlowColor);
-            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-            const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
-            document.documentElement.style.setProperty('--accent', savedProfileGlowColor);
-            document.documentElement.style.setProperty('--accent-text', textColor);
-            document.documentElement.style.setProperty('--accent-light', lightGlow);
-            document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-          }
-          return;
-        }
-        
-        if (customGlowColor && !profileCustomization.glowColor) {
-          const currentAccent = document.documentElement.style.getPropertyValue('--accent');
-          if (currentAccent !== customGlowColor) {
-            const textColor = getContrastColor(customGlowColor);
-            const rgb = hexToRgb(customGlowColor);
-            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-            const lightGlow = hslToHex(hsl.h, Math.min(hsl.s * 1.3, 100), Math.min(hsl.l * 1.5, 90));
-            document.documentElement.style.setProperty('--accent', customGlowColor);
-            document.documentElement.style.setProperty('--accent-text', textColor);
-            document.documentElement.style.setProperty('--accent-light', lightGlow);
-            document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
-          }
-        }
-      }, 1000);
-      console.log('✅ RESTARTED interval');
-    }
-    
-    // CRITICAL FOR BRAVE: Reconnect the MutationObserver
-    if (window.accentWatcher) {
-      window.accentWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-      console.log('✅ Reconnected MutationObserver');
-    }
     
     // CRITICAL: Clear profile glow so site glow can be used
     profileCustomization.glowColor = null;
@@ -4701,9 +4503,12 @@ function showScreen(screenName) {
       document.documentElement.style.setProperty('--accent-light', lightGlow);
       document.documentElement.style.setProperty('--accent-rgb', `${rgb.r},${rgb.g},${rgb.b}`);
       
-      // Update visual indicator
-      document.querySelector('.logo').textContent = `basspace [HOME - SITE GLOW: ${customGlowColor}]`;
-      document.querySelector('.logo').style.fontSize = '0.7rem';
+      // Show visual confirmation
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;top:20px;right:20px;background:purple;color:white;padding:10px 15px;border-radius:8px;z-index:99999;font-size:12px;';
+      msg.textContent = 'Restored site glow: ' + customGlowColor;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 2000);
     } else {
       console.log('🔄 No custom site glow, using auto');
       // Reset to default white text on accent
@@ -7732,11 +7537,9 @@ document.addEventListener('visibilitychange', function() {
 }, true); // Use capture = true to run BEFORE other handlers
 
 // NUCLEAR OPTION: Watch for ANY changes to --accent and override if on profile
-window.accentWatcher = new MutationObserver(() => {
+const accentWatcher = new MutationObserver(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
-  // CRITICAL: Don't override if viewing someone else! Check BOTH variables
-  const isViewingOther = viewingUserId || window.VIEWING_USER_ID;
-  if (onProfileScreen && savedProfileGlowColor && !isViewingOther) {
+  if (onProfileScreen && savedProfileGlowColor && !viewingUserId) {
     const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
     if (currentAccent && currentAccent !== savedProfileGlowColor) {
       // Someone changed it - change it back!
@@ -7751,21 +7554,15 @@ window.accentWatcher = new MutationObserver(() => {
     }
   }
 });
-window.accentWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+accentWatcher.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
 
 // FINAL OVERRIDE - Must be at end to override minified code
 // This ensures siteBackgroundColor, customGlowColor, and playlists are ALWAYS restored
 // Auto-restore interval - checks every second
-window.glowRestoreInterval = setInterval(() => {
+setInterval(() => {
   const onProfileScreen = document.getElementById('profileScreen')?.classList.contains('active');
   
-  // CRITICAL: Don't restore if viewing someone else! Check BOTH variables
-  const isViewingOther = viewingUserId || window.VIEWING_USER_ID;
-  if (isViewingOther) {
-    return; // Viewing someone else - don't touch glows
-  }
-  
-  // If on OWN profile screen, restore profile glow
+  // If on profile screen, restore profile glow
   if (onProfileScreen && savedProfileGlowColor) {
     if (!profileCustomization.glowColor || profileCustomization.glowColor !== savedProfileGlowColor) {
       profileCustomization.glowColor = savedProfileGlowColor;
