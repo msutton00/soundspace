@@ -3694,6 +3694,9 @@ async function viewUserProfile(userId) {
     window.VIEWING_USER_ID = userId; // Backup that can't be cleared
     window.VIEWING_USER_GLOW = profile.profile_glow_color; // Store their glow too
     
+    // ALERT TEST - Can't be blocked
+    alert(`BRAVE TEST:\nViewing: ${userId}\nTheir glow: ${profile.profile_glow_color}\nYour glow: ${customGlowColor}`);
+    
     // CREATE DEBUG BOX IMMEDIATELY
     let debugBox = document.getElementById('braveDebugBox');
     if (!debugBox) {
