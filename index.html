@@ -4135,9 +4135,25 @@ async function viewUserProfile(userId) {
           document.documentElement.setAttribute('style', newStyle);
         }
         
-        // Update title to show what we're forcing vs what's actually there
+        // Create visible debug box
+        let debugBox = document.getElementById('braveDebugBox');
+        if (!debugBox) {
+          debugBox = document.createElement('div');
+          debugBox.id = 'braveDebugBox';
+          debugBox.style.cssText = 'position:fixed;top:100px;left:10px;background:black;color:white;padding:15px;border:3px solid yellow;border-radius:8px;z-index:999999999;font-family:monospace;font-size:14px;max-width:400px;';
+          document.body.appendChild(debugBox);
+        }
+        
         const actualAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-        document.title = `TRY: ${theirGlow} | GOT: ${actualAccent}`;
+        const setAccent = document.documentElement.style.getPropertyValue('--accent').trim();
+        debugBox.innerHTML = `
+          <div style="margin-bottom:10px;"><strong>BRAVE DEBUG:</strong></div>
+          <div>TRYING TO SET: <span style="color:${theirGlow}">${theirGlow}</span></div>
+          <div>STYLE ATTR HAS: <span style="color:${setAccent}">${setAccent}</span></div>
+          <div>COMPUTED VALUE: <span style="color:${actualAccent}">${actualAccent}</span></div>
+          <div>viewingUserId: ${viewingUserId}</div>
+          <div>VIEWING_USER_ID: ${window.VIEWING_USER_ID}</div>
+        `;
       }, 100);
     }
     
@@ -4594,6 +4610,10 @@ function showScreen(screenName) {
       clearInterval(window.braveGlowFix);
       window.braveGlowFix = null;
     }
+    
+    // Remove debug box
+    const debugBox = document.getElementById('braveDebugBox');
+    if (debugBox) debugBox.remove();
     
     // NUCLEAR: Restart the interval
     if (!window.glowRestoreInterval) {
